@@ -6,7 +6,7 @@ import matplotlib.cm as cmx
 
 matplotlib.rcParams.update({'font.size': 7})
 
-direc = '../data/single_neuron/'
+direc = 'data/single_neuron/'
 
 color_shade = (0.9,0.9,0.9)
 #colors_J    = np.array([[116,196,118],[65,171,93],[35,139,69],[0,109,44],[0,68,27]])/255.
@@ -142,7 +142,7 @@ fig.text(0.33,0.46,'F')
 fig.text(0.65,0.46,'G')
 
 fig.set_size_inches(7,3)
-plt.savefig("../figures/figure_single_neuron.svg",dpi=300)
+plt.savefig("figures/figure_single_neuron.svg",dpi=300)
 plt.show()
 
 

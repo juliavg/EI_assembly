@@ -5,7 +5,7 @@ import numpy as np
 import scipy.special as sp
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('../parameters/')
+sys.path.append('/home/julia/Documents/iSTDP/paper/main/parameters')
 
 import common
 reload(common)
@@ -74,5 +74,3 @@ np.save(direc+"rate.npy",rate)
 np.save(direc+"CV_contours.npy",CV_contours)
 np.save(direc+"CS_rates.npy",CS.allsegs)
 np.save(direc+"CV_all.npy",CV_all)
-
-plt.show()

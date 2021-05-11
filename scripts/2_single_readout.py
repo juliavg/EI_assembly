@@ -7,7 +7,7 @@ import sys
 
 mode = sys.argv[1]
 
-direc = '../data/single_readout/data_'+mode+'/'
+direc = 'data/single_readout/data_'+mode+'/'
 
 n_input  = 160
 n_spikes = 1000

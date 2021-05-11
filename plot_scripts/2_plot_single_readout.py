@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 matplotlib.rcParams.update({'font.size': 7})
 
-direc = '../data/single_readout/'
+direc = 'data/single_readout/'
 
 def spines(ax):
     ax.spines['right'].set_visible(False)
@@ -69,4 +69,4 @@ fig.text(0.01,0.69,'No plasticity',rotation='vertical')
 fig.text(0.01,0.11,'Short term facilitation',rotation='vertical')
 
 
-plt.savefig("../figures/figure_single_readout.svg")
+plt.savefig("figures/figure_single_readout.svg")

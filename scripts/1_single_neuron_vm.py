@@ -1,7 +1,7 @@
 from importlib import reload 
 import numpy as np
 import sys
-sys.path.append('../parameters/')
+sys.path.append('/home/julia/Documents/iSTDP/paper/main/parameters')
 
 import common
 reload(common)
