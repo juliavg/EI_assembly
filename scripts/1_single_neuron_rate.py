@@ -1,123 +1,67 @@
-import nest
+from importlib import reload 
 import numpy as np
-import matplotlib.pyplot as plt
+import sys
+sys.path.append('../parameters/')
 
-direc = '../data/single_neuron/data_rate/'
+import common
+reload(common)
+import common as par
 
-# Network parameters. These are given in Brunel (2000) J.Comp.Neuro.
-delay    = 1.5    # synaptic delay in ms
-tau_m    = 20.0      # Membrane time constant (mV)
-V_th     = 20.0      # Spike threshold (mV)
-C_m      = 250.0     # Membrane capacitance (pF)
-t_ref    = 2.0       # Refractory period (ms)
-E_L      = 0.0       # Resting membrane potential (mV)
-V_reset  = 10.0      # Reset potential after spike (mV)
-tau_psc  = 1.5
+mode = sys.argv[1]
 
-N_E = 160           # Number of excitatory input neurons
-N_I = 40           # Number of inhibitory input neurons
-N_neuron = N_E+N_I
+sys.path.insert(2,par.path_to_nest[mode])
+import nest
 
-# PSP to PSC
-sub             = 1. / (tau_psc - tau_m)
-pre             = tau_m * tau_psc / C_m * sub
-frac            = (tau_m / tau_psc) ** sub
-PSC_over_PSP    = 1. / (pre * (frac**tau_m - frac**tau_psc))
+direc = par.path_to_data+'single_neuron/data_rate/'
 
-J_ext = 0.05*PSC_over_PSP
-J_E = 0.15*PSC_over_PSP                 # Excitatory synaptic strength (mV PSP max amplitude)
-
-input_rate = 9.     # rate of input neurons (Hz)
-
-ext_rate  = 18000.               # 15000 Hz for rho=15,25; 8000 Hz for rho=8; 4000 Hz for rho=3
-
-# iSTDP parameters
-tau_stdp = 20.                      # Time constant for iSTDP window (ms)
-WmaxI    = 100*J_E                      # Maximum weight of iSTDP connections (mV)
-eta      = 0.01*J_E                     # Learning rate for iSTDP
-rho      = 9                       # Target rate for iSTDP (Hz)
-alpha    = 2*rho*tau_stdp/1000.     # alpha parameter for iSTDP
-
-n_neurons = 10
-
-simtime = 200000.
-
-binsize = 5000.
-
-time_bins    = np.arange(0,2*simtime+binsize,binsize)
-record_final = 50000.
-
-stim_strength_all = np.array([1,2,3,4,5])
-
-np.save(direc+"stim_strength_all.npy",stim_strength_all)
-for ss,strength in enumerate(stim_strength_all):
+for ss,strength in enumerate(par.stim_strength_all):
     nest.ResetKernel()
-
-    # Set parameters of the NEST simulation kernel
-    nest.SetKernelStatus({'print_time': True,'local_num_threads':1})
-
-    nest.SetDefaults('iaf_psc_exp', 
-                      {"tau_m"      : tau_m,
-                       "t_ref"      : t_ref,
-                       "tau_syn_ex" : tau_psc,
-                       "tau_syn_in" : tau_psc,
-                       "C_m"        : C_m,
-                       "V_reset"    : V_reset,
-                       "E_L"        : E_L,
-                       "V_m"        : E_L,
-                       "V_th"       : V_th})
+    nest.SetDefaults(par.neuron_model,par.neuron_param_dict)
 
     # Create nodes -------------------------------------------------
 
-    node   = nest.Create('iaf_psc_exp',n_neurons)
-    parrot = nest.Create('parrot_neuron',n_neurons)
-
+    node    = nest.Create(par.neuron_model,par.n_single_neurons)
+    parrot  = nest.Create('parrot_neuron',par.n_single_neurons)
     noise_E = nest.Create('poisson_generator', 2)
-    noise_I = nest.Create('poisson_generator', 1, params={'rate': N_I*input_rate})
-
-    nest.SetStatus(noise_E,'rate', [ext_rate,N_E*input_rate])
-
+    noise_I = nest.Create('poisson_generator', 1, params={'rate': float(par.C_EI*par.rho)})
     spikes  = nest.Create('spike_detector')
-
     weight_recorder = nest.Create('weight_recorder',params={'targets':[node[0]]})
 
+    nest.SetStatus(noise_E,'rate', [par.p_rate,float(par.C_EE*par.rho)])
 
     # Connect nodes ------------------------------------------------
 
     nest.CopyModel('static_synapse',
                    'excitatory',
-                   {'weight':J_E, 
-                    'delay':delay})
+                   {'weight' : par.J_E, 
+                    'delay'  : par.delay})
 
     nest.CopyModel('static_synapse',
                    'external',
-                   {'weight':J_ext, 
-                    'delay':delay})
-
-    nest.Connect([noise_E[0]], node,'all_to_all','external')
-    nest.Connect([noise_E[1]], node,'all_to_all','excitatory')
+                   {'weight' : par.J_ext, 
+                    'delay'  : par.delay})
 
     nest.CopyModel('vogels_sprekeler_synapse',
                    'plastic_inhibitory',
-                   {'tau': tau_stdp, 
-                    'Wmax': -WmaxI,
-                    'eta': eta,
-                    'alpha': alpha,
-                    'weight': -.1,
-                    'weight_recorder': weight_recorder[0]})
+                   {'tau'               : par.tau_stdp, 
+                    'Wmax'              : -par.WmaxI,
+                    'eta'               : par.eta,
+                    'alpha'             : par.alpha,
+                    'weight'            : -.1,
+                    'weight_recorder'   : weight_recorder[0]})
 
+    nest.Connect([noise_E[0]], node,'all_to_all','external')
+    nest.Connect([noise_E[1]], node,'all_to_all','excitatory')
     nest.Connect(parrot,node,'one_to_one','plastic_inhibitory')
-
     nest.Connect(noise_I, parrot)
-
     nest.Connect(node, spikes)
+    
+    # Simulate -----------------------------------------------------
 
-    nest.Simulate(simtime)
-
+    nest.Simulate(par.single_sim_time/2)
     connections = nest.GetConnections([noise_E[1]],node)
-
-    nest.SetStatus(connections,params={'weight':strength*J_E})
-    nest.Simulate(simtime)
+    nest.SetStatus(connections,params={'weight':strength*par.J_E})
+    nest.Simulate(par.single_sim_time/2)
 
     # Analysis ------------------------------------------------------
 
@@ -130,10 +74,10 @@ for ss,strength in enumerate(stim_strength_all):
 
     for nn in node:
         times_neuron = sd_times[sd_senders==nn]
-        rate_series  = np.histogram(times_neuron,bins=time_bins)[0]/binsize*1000.
-        rate_final   = len(times_neuron[times_neuron>(2*simtime-record_final)])/record_final*1000.
+        rate_series  = np.histogram(times_neuron,bins=par.single_bins)[0]/par.single_binsize*1000.
+        rate_final   = len(times_neuron[times_neuron>(par.single_sim_time-par.single_rec_final)])/par.single_rec_final*1000.
 
-        isi = np.diff(times_neuron[times_neuron>(2*simtime-record_final)])
+        isi = np.diff(times_neuron[times_neuron>(par.single_sim_time-par.single_rec_final)])
         cv  = np.std(isi)/np.mean(isi)
         
         extension = "_"+str(nn)+"_"+str(ss)+".npy"
@@ -147,7 +91,6 @@ for ss,strength in enumerate(stim_strength_all):
     wr_times   = wr_status['times']
     wr_weights = wr_status['weights']
 
-    mean_weight = np.histogram(wr_times,bins=time_bins,weights=wr_weights)[0]/np.histogram(wr_times,bins=time_bins)[0]
+    mean_weight = np.histogram(wr_times,bins=par.single_bins,weights=wr_weights)[0]/np.histogram(wr_times,bins=par.single_bins)[0]
 
     np.save(direc+"mean_weight_"+str(ss)+".npy",mean_weight)
-    np.save(direc+"time_bins_"+str(ss)+".npy",time_bins)
