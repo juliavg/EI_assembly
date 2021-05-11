@@ -12,8 +12,7 @@ import common
 reload(common)
 import common as par
 
-#mode = sys.argv[1]
-mode = 'static'
+mode = sys.argv[1]
 
 data      = h5.File(par.path_to_data+'data_single_readout.hdf5','a')
 data_mode = data.require_group(mode)
@@ -128,3 +127,5 @@ data_mode['rate_out'][...]  = rate_out
 data_mode['cv_in'][...]  = cv_in
 data_mode['mean_vm'][...]  = mean_vm
 data_mode['std_vm'][...]  = std_vm
+
+data.close()

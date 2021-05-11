@@ -73,3 +73,5 @@ for ss,strength in enumerate(par.stim_strength_all):
     data_strength.require_dataset('vm',vm.shape,dtype=vm.dtype)
     data_strength['time_vm'][...] = time_vm
     data_strength['vm'][...] = vm
+    
+data.close()

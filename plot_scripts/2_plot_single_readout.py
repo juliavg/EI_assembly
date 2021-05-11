@@ -63,5 +63,7 @@ fig.text(0.755,0.96,'D')
 fig.text(0.01,0.69,'No plasticity',rotation='vertical')
 fig.text(0.01,0.11,'Short term facilitation',rotation='vertical')
 
+data.close()
 
+fig.set_size_inches(7,3)
 plt.savefig(par.path_to_figures+"figure_single_readout.svg")

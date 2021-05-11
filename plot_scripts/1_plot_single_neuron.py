@@ -129,5 +129,7 @@ fig.text(0.03,0.46,'E')
 fig.text(0.33,0.46,'F')
 fig.text(0.65,0.46,'G')
 
+data.close()
+
 fig.set_size_inches(7,3)
 plt.savefig(par.path_to_figures+"figure_single_neuron.svg",dpi=300)
