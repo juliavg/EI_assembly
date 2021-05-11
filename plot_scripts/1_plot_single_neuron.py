@@ -81,7 +81,6 @@ CS_rates    = data['theory/CS_rates']
 
 rates_contour = (par.rates_contour*1000.).astype(int)
 
-
 rmin = 0
 rmax = np.max(rate)
 X,Y  = np.meshgrid(mu_values,std_values)
@@ -89,11 +88,12 @@ im   = ax5.pcolor(X,Y,rate.T,cmap='viridis',vmin=rmin,vmax=rmax,rasterized=True)
 cbar = fig.colorbar(im,cax=ax5b)
 ax5.contour(X,Y, rate.T,levels=rates_contour,colors='k',linewidths=1)
 
-for ss in np.arange(par.stim_strength_all.shape[0]):
-    vm = np.load(direc+"data_vm/vm_"+str(ss)+".npy")
+for ss,strength in enumerate(par.stim_strength_all):
+    vm = np.array(data['vm/'+str(strength)+'/vm'])
     mean_vm = np.mean(vm[int(vm.shape[0]/2):])
     std_vm = np.std(vm[int(vm.shape[0]/2):])
-    ax5.plot(mean_vm,std_vm,'x',color=colors_J[ss])  
+    ax5.plot(mean_vm,std_vm,'x',color=colors_J[ss]) 
+    ax6.plot(mean_vm,std_vm,'x',color=colors_J[ss])
 
 cbar.set_label("Firing rate [Hz]")
 ax5.set_xlabel(r"$\mu$ [mV]")
@@ -104,13 +104,6 @@ X,Y  = np.meshgrid(mu_values,std_values)
 im   = ax6.pcolor(X,Y,CV_all.T,cmap='viridis',rasterized=True)
 cbar = fig.colorbar(im,cax=ax6b)
 CS   = ax6.contour(X,Y, CV_all.T,colors='k',linewidths=1)
-
-for ss in np.arange(par.stim_strength_all.shape[0]):
-    vm = np.load(direc+"data_vm/vm_"+str(ss)+".npy")
-    mean_vm = np.mean(vm[int(vm.shape[0]/2):])
-    std_vm = np.std(vm[int(vm.shape[0]/2):])
-    ax6.plot(mean_vm,std_vm,'x',color=colors_J[ss])
-
 cbar.set_label("CV")
 ax6.set_xlabel(r"$\mu$ [mV]")
 ax6.set_ylabel(r"$\sigma$ [mV]")

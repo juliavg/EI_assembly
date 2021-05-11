@@ -1,5 +1,6 @@
 from importlib import reload 
 import numpy as np
+import h5py as h5
 import sys
 sys.path.append('/home/julia/Documents/iSTDP/paper/main/parameters')
 
@@ -12,11 +13,13 @@ mode = sys.argv[1]
 sys.path.insert(2,par.path_to_nest[mode])
 import nest
 
-direc = par.path_to_data+'single_neuron/'
-
+data    = h5.File(par.path_to_data+'data_single_neuron.hdf5','r+')
+data_vm = data.create_group('vm')
 
 for ss,strength in enumerate(par.stim_strength_all):
-    mean_weight = np.load(direc+"data_rate/mean_weight_"+str(ss)+".npy")
+    strength_group = data_vm.create_group(str(strength))
+
+    mean_weight = data['rate/'+str(strength)+'/mean_weight']
     inh_weight  = np.mean(mean_weight[-int(mean_weight.shape[0]/4):])
 
     # Set parameters of the NEST simulation kernel
@@ -66,6 +69,7 @@ for ss,strength in enumerate(par.stim_strength_all):
     time_vm = events['times']
     vm      = events['V_m']
 
-    extension = "_"+str(ss)+".npy"
-    np.save(direc+"data_vm/vm"+extension,vm)
-    np.save(direc+"data_vm/time_vm.npy",time_vm)
+    strength_group.create_dataset('time_vm',time_vm.shape,dtype=time_vm.dtype)
+    strength_group.create_dataset('vm',vm.shape,dtype=vm.dtype)
+    strength_group['time_vm'][...] = time_vm
+    strength_group['vm'][...] = vm
