@@ -13,7 +13,7 @@ reload(common)
 import common as par
 
 data   = h5.File(par.path_to_data+'data_single_neuron.hdf5','w')
-theory = data.create_group('theory')
+data_theory = data.create_group('theory')
 
 #################################
 # Theoretical CV - Brunel, 2000
@@ -52,24 +52,24 @@ for ii,mu in enumerate(mu_all):
         rate[ii,jj] = (par.t_ref+par.tau_m*np.sqrt(np.pi)*INT(integrand,(par.V_reset-mu)/std,(par.V_th-mu)/std)[0])**-1
         CV_all[ii,jj] = np.sqrt(2*np.pi*(rate[ii,jj]*par.tau_m)**2*integral2((par.V_reset-mu)/std,(par.V_th-mu)/std))
 
-theory.create_dataset('mu_all',mu_all.shape,dtype=mu_all.dtype)
-theory.create_dataset('std_all',std_all.shape,dtype=std_all.dtype)
-theory.create_dataset('rate',rate.shape,dtype=rate.dtype)
-theory.create_dataset('CV_all',CV_all.shape,dtype=CV_all.dtype)
-theory['mu_all'][...]  = mu_all
-theory['std_all'][...] = std_all
-theory['rate'][...]    = rate
-theory['CV_all'][...]  = CV_all
+data_theory.create_dataset('mu_all',mu_all.shape,dtype=mu_all.dtype)
+data_theory.create_dataset('std_all',std_all.shape,dtype=std_all.dtype)
+data_theory.create_dataset('rate',rate.shape,dtype=rate.dtype)
+data_theory.create_dataset('CV_all',CV_all.shape,dtype=CV_all.dtype)
+data_theory['mu_all'][...]  = mu_all
+data_theory['std_all'][...] = std_all
+data_theory['rate'][...]    = rate
+data_theory['CV_all'][...]  = CV_all
 
 X,Y = np.meshgrid(mu_all,std_all)
 CS  = plt.contour(X,Y, rate.T,levels=par.rates_contour)
 
-CS_rates = theory.create_group('CS_rates')
+CS_rates = data_theory.create_group('CS_rates')
 for idx,seg in enumerate(CS.allsegs):
     CS_rates.create_dataset(str(int(par.rates_contour[idx]*1000.)),seg[0].shape,dtype=seg[0].dtype)
     CS_rates[str(int(par.rates_contour[idx]*1000.))][...] = seg[0]
 
-CV_contours = theory.create_group('CV_contours')
+CV_contours = data_theory.create_group('CV_contours')
 for rr,nu in enumerate(par.rates_contour):
     CV_temp = np.zeros(len(CS.allsegs[rr][0]))
     for ii in np.arange(len(CS.allsegs[rr][0])):

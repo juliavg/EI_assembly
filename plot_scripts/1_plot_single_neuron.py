@@ -40,8 +40,8 @@ ax7  = fig.add_axes([0.72,0.15,0.125,0.3])
 
 # Panel B
 ii = 3                                                                      # Selects which stim_strengh to plot weight and rate from
-weight = np.load(direc+"data_rate/mean_weight_"+str(ii)+".npy")
-time   = np.load(direc+"data_rate/time_bins_"+str(ii)+".npy")[:-1]/1000.
+weight = np.array(data['rate/'+str(par.stim_strength_all[ii])+'/mean_weight'])
+time   = par.single_bins[:-1]*1000.
 ax2.plot(time,weight,color='grey')
 ax2.set_xlabel("Time [s]")
 ax2.set_ylabel(r"$W_{I \to E}$ [pA]")
@@ -49,11 +49,8 @@ ax2.axvspan(time[int(time.shape[0]/2)],time[-1],color=color_shade)
 ax2.spines['right'].set_visible(False)
 ax2.spines['top'].set_visible(False)
 
-
 # Panel C
-rate = np.load(direc+"data_rate/rate_series_1_"+str(ii)+".npy")
-for nn in np.arange(par.n_single_neurons-1):
-    rate += np.load(direc+"data_rate/rate_series_"+str(nn+2)+"_"+str(ii)+".npy")
+rate = np.array(data['rate/'+str(par.stim_strength_all[ii])+'/rate_series'])
 ax3.plot(time,rate/par.n_single_neurons,color='grey')
 ax3.set_xlabel("Time [s]")
 ax3.set_ylabel("Firing rate [Hz]")
@@ -63,12 +60,8 @@ ax3.spines['top'].set_visible(False)
 
 # Panel D
 for ss in np.arange(par.stim_strength_all.shape[0]):
-    rate = []
-    cv   = []
-    for nn in np.arange(par.n_single_neurons):
-        extension = "_"+str(nn+1)+"_"+str(ss)+".npy"
-        rate.append(np.load(direc+"data_rate/rate_final"+extension))
-        cv.append(np.load(direc+"data_rate/cv"+extension))
+    rate = np.array(data['rate/'+str(par.stim_strength_all[ss])+'/rate_final'])
+    cv   = np.array(data['rate/'+str(par.stim_strength_all[ss])+'/cv_all'])
     ax4.bar(ss-bar_width/2,height=np.mean(rate),width=bar_width,edgecolor=colors_J[ss],yerr=np.std(rate),facecolor='white')
     ax4b.bar(ss+bar_width/2,height=np.mean(cv),width=bar_width,color=colors_J[ss],yerr=np.std(cv))
 

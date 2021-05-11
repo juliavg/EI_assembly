@@ -1,5 +1,6 @@
 from importlib import reload 
 import numpy as np
+import h5py as h5
 import sys
 sys.path.append('/home/julia/Documents/iSTDP/paper/main/parameters')
 
@@ -13,8 +14,12 @@ sys.path.insert(2,par.path_to_nest[mode])
 import nest
 
 direc = par.path_to_data+'single_neuron/data_rate/'
+data  = h5.File(par.path_to_data+'data_single_neuron.hdf5','r+')
+data_rate = data.create_group('rate')
 
 for ss,strength in enumerate(par.stim_strength_all):
+    strength_group = data_rate.create_group(str(strength))
+
     nest.ResetKernel()
     nest.SetDefaults(par.neuron_model,par.neuron_param_dict)
 
@@ -72,19 +77,22 @@ for ss,strength in enumerate(par.stim_strength_all):
     sd_senders = sd_senders[np.argsort(sd_times)]
     sd_times   = sd_times[np.argsort(sd_times)]
 
-    for nn in node:
-        times_neuron = sd_times[sd_senders==nn]
-        rate_series  = np.histogram(times_neuron,bins=par.single_bins)[0]/par.single_binsize*1000.
-        rate_final   = len(times_neuron[times_neuron>(par.single_sim_time-par.single_rec_final)])/par.single_rec_final*1000.
+    rate_series = np.histogram(sd_times,bins=par.single_bins)[0]/par.n_single_neurons/par.single_binsize*1000.
+    strength_group.create_dataset('rate_series',rate_series.shape,dtype=rate_series.dtype)
+    strength_group['rate_series'][...] = rate_series
 
-        isi = np.diff(times_neuron[times_neuron>(par.single_sim_time-par.single_rec_final)])
-        cv  = np.std(isi)/np.mean(isi)
-        
-        extension = "_"+str(nn)+"_"+str(ss)+".npy"
-        np.save(direc+"rate_series"+extension,rate_series)
-        np.save(direc+"rate_final"+extension,rate_final)
-        np.save(direc+"cv"+extension,cv)
-        
+    rate_final = np.zeros(len(node))
+    cv_all     = np.zeros(len(node))
+    for idx,nn in enumerate(node):
+        times_neuron    = sd_times[sd_senders==nn]
+        rate_final[idx] = len(times_neuron[times_neuron>(par.single_sim_time-par.single_rec_final)])/par.single_rec_final*1000.
+        isi             = np.diff(times_neuron[times_neuron>(par.single_sim_time-par.single_rec_final)])
+        cv_all[idx]     = np.std(isi)/np.mean(isi)
+
+    strength_group.create_dataset('rate_final',rate_final.shape,dtype=rate_final.dtype)
+    strength_group.create_dataset('cv_all',cv_all.shape,dtype=cv_all.dtype)
+    strength_group['rate_final'][...] = rate_final
+    strength_group['cv_all'][...] = cv_all
 
     # Weights
     wr_status  = nest.GetStatus(weight_recorder,'events')[0]
@@ -93,4 +101,5 @@ for ss,strength in enumerate(par.stim_strength_all):
 
     mean_weight = np.histogram(wr_times,bins=par.single_bins,weights=wr_weights)[0]/np.histogram(wr_times,bins=par.single_bins)[0]
 
-    np.save(direc+"mean_weight_"+str(ss)+".npy",mean_weight)
+    strength_group.create_dataset('mean_weight',mean_weight.shape,dtype=mean_weight.dtype)
+    strength_group['mean_weight'][...] = mean_weight
