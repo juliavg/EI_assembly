@@ -55,7 +55,7 @@ nest.CopyModel('vogels_sprekeler_synapse',
                 'Wmax'              : -par.WmaxI,
                 'eta'               : par.eta,
                 'alpha'             : par.alpha,
-                'weight'            : par.wI0,
+                'weight'            : par.J_I,
                 'weight_recorder'   : weight_I[0]})
 
 nest.CopyModel('stdp_triplet_synapse', 
