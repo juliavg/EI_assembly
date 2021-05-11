@@ -2,66 +2,32 @@ import numpy as np
 import matplotlib.pyplot as plt
 import nest
 import scipy.special as sp
+import h5py as h5
 from scipy.integrate import quad as INT
+from importlib import reload 
 import sys
+sys.path.append('/home/julia/Documents/iSTDP/paper/main/parameters')
 
-mode = sys.argv[1]
+import common
+reload(common)
+import common as par
 
-direc = 'data/single_readout/data_'+mode+'/'
+#mode = sys.argv[1]
+mode = 'static'
 
-n_input  = 160
-n_spikes = 1000
+data      = h5.File(par.path_to_data+'data_single_readout.hdf5','a')
+data_mode = data.require_group(mode)
 
-dt = 0.1
+rate_out = np.zeros(par.CV_all.shape[0])
+cv_in    = np.zeros((par.CV_all.shape[0],par.assembly_size))
+mean_vm  = np.zeros(par.CV_all.shape[0])
+std_vm   = np.zeros(par.CV_all.shape[0])
 
-delay   = 1.5
-
-C_m     = 250.
-tau_m   = 20.
-tau_psc = 1.5
-t_ref   = 2.
-E_L     = 0.
-V_th    = 20.
-V_reset = 10.
-
-# PSP to PSC
-sub             = 1. / (tau_psc - tau_m)
-pre             = tau_m * tau_psc / C_m * sub
-frac            = (tau_m / tau_psc) ** sub
-PSC_over_PSP    = 1. / (pre * (frac**tau_m - frac**tau_psc))
-
-J_E = 0.15*PSC_over_PSP
-
-rate = 9.
-
-simtime = 50000.
-warmup  = 5000.
-
-tau_rec = 100.   # recovery time
-tau_fac = 100.   # facilitation time
-U       = 0.02   # facilitation parameter U
-A       = 1000.   # PSC weight in pA
-
-mean_noise = 150.
-std_noise = 0.
-
-CV_all  = np.arange(.4,1.5,0.1)
-
-final_weight = np.zeros(CV_all.shape[0])
-rate_out     = np.zeros(CV_all.shape[0])
-rate_in      = np.zeros((CV_all.shape[0],min(n_input,1000)))
-cv_in        = np.zeros((CV_all.shape[0],min(n_input,1000)))
-cv_out       = np.zeros(CV_all.shape[0])
-mean_cc      = np.zeros(CV_all.shape[0])
-
-times_vm = {}
-vm       = {}
-
-for cc,CV in enumerate(CV_all):
+for cc,CV in enumerate(par.CV_all):
     shape = 1./(CV**2)
-    scale = CV**2/rate
+    scale = CV**2/par.rho
 
-    intervals = np.random.gamma(shape=shape,scale=scale,size=(n_input,n_spikes))          # ISI distribution
+    intervals = np.random.gamma(shape=shape,scale=scale,size=(par.assembly_size,par.readout_n_spikes))          # ISI distribution
 
     spk_times = np.floor(np.cumsum(intervals,axis=1)*10000)/10.                             # spike times in ms
     spk_times += 1                                         # shifts spike trains by 1ms (spike_generator does not take spikes at 0)
@@ -72,38 +38,29 @@ for cc,CV in enumerate(CV_all):
     weight_recorder = nest.Create('weight_recorder')
 
     # Set defaults
-    nest.SetDefaults('iaf_psc_exp', 
-                      {"tau_m"      : tau_m,
-                       "t_ref"      : t_ref,
-                       "tau_syn_ex" : tau_psc,
-                       "tau_syn_in" : tau_psc,
-                       "C_m"        : C_m,
-                       "V_reset"    : V_reset,
-                       "E_L"        : E_L,
-                       "V_m"        : E_L,
-                       "V_th"       : V_th})
+    nest.SetDefaults(par.neuron_model,par.neuron_param_dict)
 
     nest.CopyModel('static_synapse',
                    'static',
-                   {'weight':J_E, 
-                    'delay':delay})
+                   {'weight':par.J_E, 
+                    'delay':par.delay})
                     
     nest.CopyModel("tsodyks_synapse", 
                "stp",
-               {"tau_psc": tau_psc,
-                "tau_rec": tau_rec,
-                "tau_fac": tau_fac,
-                "U"      : U,
-                "delay"  : 0.1,
-                "weight" : A,
+               {"tau_psc": par.tau_psc,
+                "tau_rec": par.tau_rec,
+                "tau_fac": par.tau_fac,
+                "U"      : par.U,
+                "delay"  : par.delay,
+                "weight" : par.A,
                 "u"      : 0.0,
                 "x"      : 1.0,
                 'weight_recorder': weight_recorder[0]})
 
 
     # Create nodes
-    spike_generator = nest.Create("spike_generator",n_input)
-    parrot_neurons  = nest.Create("parrot_neuron",n_input)
+    spike_generator = nest.Create("spike_generator",par.assembly_size)
+    parrot_neurons  = nest.Create("parrot_neuron",par.assembly_size)
     output_neurons  = nest.Create("iaf_psc_exp",2)
     spike_detector  = nest.Create("spike_detector",2)
     multimeter      = nest.Create("multimeter")
@@ -114,7 +71,7 @@ for cc,CV in enumerate(CV_all):
     nest.SetStatus([output_neurons[1]],'V_th',1000.)
     for ii,sg in enumerate(spike_generator):
         nest.SetStatus([sg],{'spike_times':spk_times[ii,:]})
-    nest.SetStatus(noise,{'mean':mean_noise,'std':std_noise})
+    nest.SetStatus(noise,{'mean':par.noise_mean_std[0],'std':par.noise_mean_std[1]})
 
     # Connect nodes
     nest.Connect(spike_generator,parrot_neurons,'one_to_one')
@@ -129,7 +86,7 @@ for cc,CV in enumerate(CV_all):
     
 
     # Simulate
-    nest.Simulate(simtime)
+    nest.Simulate(par.readout_sim_time)
 
     # Read data
     events = nest.GetStatus(spike_detector,'events')[0]
@@ -139,49 +96,35 @@ for cc,CV in enumerate(CV_all):
     times_in = events['times']
     senders_in = events['senders']
     
-    # Output cv and cc
-    binsize       = 10.
-    bins          = np.arange(0,simtime+binsize,binsize)
-    spk_train_out = np.histogram(times,bins=bins)[0]
-    cc_all        = np.zeros(min(n_input,1000))
-    cv            = []
-    rate_temp     = []
-    for ii in np.arange(min(n_input,1000)):
+    # Output rate
+    spk_train_out = np.histogram(times,bins=par.readout_bins)[0]
+    for ii in np.arange(par.assembly_size):
         spk_times = times_in[senders_in==np.unique(senders_in)[ii]]
-        spk_train_in = np.histogram(spk_times,bins=bins)[0]
-        cc_all[ii]   = np.corrcoef(spk_train_out,spk_train_in)[0,1]
-        
-        isi_in = np.diff(spk_times[spk_times>warmup])
+        spk_train_in = np.histogram(spk_times,bins=par.readout_bins)[0]
+        isi_in = np.diff(spk_times[spk_times>par.readout_warmup])
         cv_in[cc,ii] = np.std(isi_in)/np.mean(isi_in)
-        rate_in[cc,ii] = len(spk_times)/simtime
 
-    isi_out = np.diff(times[times>warmup])
+    isi_out = np.diff(times[times>par.readout_warmup])
 
     wr_status  = nest.GetStatus(weight_recorder,'events')[0]
     wr_times   = wr_status['times']
     wr_weights = wr_status['weights']
     
-    mean_weight = np.histogram(wr_times,bins=bins,weights=wr_weights)[0]/np.histogram(wr_times,bins=bins)[0]/n_input
-    plt.subplot(2,3,1)
-    plt.plot(bins[:-1],mean_weight)
-    
-    final_weight[cc] = mean_weight[-1] 
-    rate_out[cc]     = len(times[times>warmup])/(simtime-warmup)*1000.
-    cv_out[cc]       = np.std(isi_out)/np.mean(isi_out)
-    mean_cc[cc]      = np.mean(cc_all)
-    CV_all[cc]       = CV
+    mean_weight = np.histogram(wr_times,bins=par.readout_bins,weights=wr_weights)[0]/np.histogram(wr_times,bins=par.readout_bins)[0]/par.assembly_size
+
+    rate_out[cc] = len(times[times>par.readout_warmup])/(par.readout_sim_time-par.readout_warmup)*1000.
     
     events = nest.GetStatus(multimeter,'events')[0]
-    times_vm[cc] = events['times']
-    vm[cc]       = events['V_m']
-    
-np.save(direc+"times_vm.npy",times_vm)
-np.save(direc+"vm.npy",vm)
+    vm  = events['V_m']
+    tvm = events['times']
+    mean_vm[cc] = np.mean(vm[tvm>par.readout_warmup])
+    std_vm[cc]  = np.std(vm[tvm>par.readout_warmup])
 
-np.save(direc+"final_weight.npy",final_weight)
-np.save(direc+"rate_out.npy",rate_out)
-np.save(direc+"rate_in.npy",rate_in)
-np.save(direc+"cv_out.npy",cv_out)
-np.save(direc+"cv_in.npy",cv_in)
-np.save(direc+"mean_cc.npy",mean_cc)
-np.save(direc+"CV_all.npy",CV_all)
+data_mode.require_dataset('rate_out',rate_out.shape,dtype=rate_out.dtype)
+data_mode.require_dataset('cv_in',cv_in.shape,dtype=cv_in.dtype)
+data_mode.require_dataset('mean_vm',mean_vm.shape,dtype=mean_vm.dtype)
+data_mode.require_dataset('std_vm',std_vm.shape,dtype=std_vm.dtype)
+data_mode['rate_out'][...]  = rate_out
+data_mode['cv_in'][...]  = cv_in
+data_mode['mean_vm'][...]  = mean_vm
+data_mode['std_vm'][...]  = std_vm
