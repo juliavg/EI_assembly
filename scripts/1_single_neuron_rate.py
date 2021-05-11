@@ -13,11 +13,11 @@ mode = sys.argv[1]
 sys.path.insert(2,par.path_to_nest[mode])
 import nest
 
-data      = h5.File(par.path_to_data+'data_single_neuron.hdf5','r+')
-data_rate = data.create_group('rate')
+data     = h5.File(par.path_to_data+'data_single_neuron.hdf5','r+')
+data_sim = data.create_group('simulation')
 
 for ss,strength in enumerate(par.stim_strength_all):
-    strength_group = data_rate.create_group(str(strength))
+    strength_group = data_sim.create_group(str(strength))
 
     nest.ResetKernel()
     nest.SetDefaults(par.neuron_model,par.neuron_param_dict)
@@ -102,3 +102,5 @@ for ss,strength in enumerate(par.stim_strength_all):
 
     strength_group.create_dataset('mean_weight',mean_weight.shape,dtype=mean_weight.dtype)
     strength_group['mean_weight'][...] = mean_weight
+    
+data.close()

@@ -40,7 +40,7 @@ ax7  = fig.add_axes([0.72,0.15,0.125,0.3])
 
 # Panel B
 ii = 3                                                                      # Selects which stim_strengh to plot weight and rate from
-weight = np.array(data['rate/'+str(par.stim_strength_all[ii])+'/mean_weight'])
+weight = np.array(data['simulation/'+str(par.stim_strength_all[ii])+'/mean_weight'])
 time   = par.single_bins[:-1]*1000.
 ax2.plot(time,weight,color='grey')
 ax2.set_xlabel("Time [s]")
@@ -50,7 +50,7 @@ ax2.spines['right'].set_visible(False)
 ax2.spines['top'].set_visible(False)
 
 # Panel C
-rate = np.array(data['rate/'+str(par.stim_strength_all[ii])+'/rate_series'])
+rate = np.array(data['simulation/'+str(par.stim_strength_all[ii])+'/rate_series'])
 ax3.plot(time,rate,color='grey')
 ax3.set_xlabel("Time [s]")
 ax3.set_ylabel("Firing rate [Hz]")
@@ -60,8 +60,8 @@ ax3.spines['top'].set_visible(False)
 
 # Panel D
 for ss,strength in enumerate(par.stim_strength_all):
-    rate = np.array(data['rate/'+str(strength)+'/rate_final'])
-    cv   = np.array(data['rate/'+str(strength)+'/cv_all'])
+    rate = np.array(data['simulation/'+str(strength)+'/rate_final'])
+    cv   = np.array(data['simulation/'+str(strength)+'/cv_all'])
     ax4.bar(ss-bar_width/2,height=np.mean(rate),width=bar_width,edgecolor=colors_J[ss],yerr=np.std(rate),facecolor='white')
     ax4b.bar(ss+bar_width/2,height=np.mean(cv),width=bar_width,color=colors_J[ss],yerr=np.std(cv))
 
@@ -89,7 +89,7 @@ cbar = fig.colorbar(im,cax=ax5b)
 ax5.contour(X,Y, rate.T,levels=rates_contour,colors='k',linewidths=1)
 
 for ss,strength in enumerate(par.stim_strength_all):
-    vm = np.array(data['vm/'+str(strength)+'/vm'])
+    vm = np.array(data['simulation/'+str(strength)+'/vm'])
     mean_vm = np.mean(vm[int(vm.shape[0]/2):])
     std_vm = np.std(vm[int(vm.shape[0]/2):])
     ax5.plot(mean_vm,std_vm,'x',color=colors_J[ss]) 

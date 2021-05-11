@@ -13,13 +13,13 @@ mode = sys.argv[1]
 sys.path.insert(2,par.path_to_nest[mode])
 import nest
 
-data    = h5.File(par.path_to_data+'data_single_neuron.hdf5','r+')
-data_vm = data.create_group('vm')
+data     = h5.File(par.path_to_data+'data_single_neuron.hdf5','r+')
+data_sim = data['simulation']
 
 for ss,strength in enumerate(par.stim_strength_all):
-    strength_group = data_vm.create_group(str(strength))
+    data_strength = data_sim[str(strength)]
 
-    mean_weight = data['rate/'+str(strength)+'/mean_weight']
+    mean_weight = data_strength['mean_weight']
     inh_weight  = np.mean(mean_weight[-int(mean_weight.shape[0]/4):])
 
     # Set parameters of the NEST simulation kernel
@@ -69,7 +69,7 @@ for ss,strength in enumerate(par.stim_strength_all):
     time_vm = events['times']
     vm      = events['V_m']
 
-    strength_group.create_dataset('time_vm',time_vm.shape,dtype=time_vm.dtype)
-    strength_group.create_dataset('vm',vm.shape,dtype=vm.dtype)
-    strength_group['time_vm'][...] = time_vm
-    strength_group['vm'][...] = vm
+    data_strength.create_dataset('time_vm',time_vm.shape,dtype=time_vm.dtype)
+    data_strength.create_dataset('vm',vm.shape,dtype=vm.dtype)
+    data_strength['time_vm'][...] = time_vm
+    data_strength['vm'][...] = vm
