@@ -13,8 +13,7 @@ mode = sys.argv[1]
 sys.path.insert(2,par.path_to_nest[mode])
 import nest
 
-direc = par.path_to_data+'single_neuron/data_rate/'
-data  = h5.File(par.path_to_data+'data_single_neuron.hdf5','r+')
+data      = h5.File(par.path_to_data+'data_single_neuron.hdf5','r+')
 data_rate = data.create_group('rate')
 
 for ss,strength in enumerate(par.stim_strength_all):

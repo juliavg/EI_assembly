@@ -51,7 +51,7 @@ ax2.spines['top'].set_visible(False)
 
 # Panel C
 rate = np.array(data['rate/'+str(par.stim_strength_all[ii])+'/rate_series'])
-ax3.plot(time,rate/par.n_single_neurons,color='grey')
+ax3.plot(time,rate,color='grey')
 ax3.set_xlabel("Time [s]")
 ax3.set_ylabel("Firing rate [Hz]")
 ax3.axvspan(time[int(time.shape[0]/2)],time[-1],color=color_shade)
@@ -59,9 +59,9 @@ ax3.spines['right'].set_visible(False)
 ax3.spines['top'].set_visible(False)
 
 # Panel D
-for ss in np.arange(par.stim_strength_all.shape[0]):
-    rate = np.array(data['rate/'+str(par.stim_strength_all[ss])+'/rate_final'])
-    cv   = np.array(data['rate/'+str(par.stim_strength_all[ss])+'/cv_all'])
+for ss,strength in enumerate(par.stim_strength_all):
+    rate = np.array(data['rate/'+str(strength)+'/rate_final'])
+    cv   = np.array(data['rate/'+str(strength)+'/cv_all'])
     ax4.bar(ss-bar_width/2,height=np.mean(rate),width=bar_width,edgecolor=colors_J[ss],yerr=np.std(rate),facecolor='white')
     ax4b.bar(ss+bar_width/2,height=np.mean(cv),width=bar_width,color=colors_J[ss],yerr=np.std(cv))
 
