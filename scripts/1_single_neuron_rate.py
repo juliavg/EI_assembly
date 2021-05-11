@@ -13,11 +13,11 @@ mode = sys.argv[1]
 sys.path.insert(2,par.path_to_nest[mode])
 import nest
 
-data     = h5.File(par.path_to_data+'data_single_neuron.hdf5','r+')
-data_sim = data.create_group('simulation')
+data     = h5.File(par.path_to_data+'data_single_neuron.hdf5','a')
+data_sim = data.require_group('simulation')
 
 for ss,strength in enumerate(par.stim_strength_all):
-    strength_group = data_sim.create_group(str(strength))
+    strength_group = data_sim.require_group(str(strength))
 
     nest.ResetKernel()
     nest.SetDefaults(par.neuron_model,par.neuron_param_dict)
@@ -77,7 +77,7 @@ for ss,strength in enumerate(par.stim_strength_all):
     sd_times   = sd_times[np.argsort(sd_times)]
 
     rate_series = np.histogram(sd_times,bins=par.single_bins)[0]/par.n_single_neurons/par.single_binsize*1000.
-    strength_group.create_dataset('rate_series',rate_series.shape,dtype=rate_series.dtype)
+    strength_group.require_dataset('rate_series',rate_series.shape,dtype=rate_series.dtype)
     strength_group['rate_series'][...] = rate_series
 
     rate_final = np.zeros(len(node))
@@ -88,8 +88,8 @@ for ss,strength in enumerate(par.stim_strength_all):
         isi             = np.diff(times_neuron[times_neuron>(par.single_sim_time-par.single_rec_final)])
         cv_all[idx]     = np.std(isi)/np.mean(isi)
 
-    strength_group.create_dataset('rate_final',rate_final.shape,dtype=rate_final.dtype)
-    strength_group.create_dataset('cv_all',cv_all.shape,dtype=cv_all.dtype)
+    strength_group.require_dataset('rate_final',rate_final.shape,dtype=rate_final.dtype)
+    strength_group.require_dataset('cv_all',cv_all.shape,dtype=cv_all.dtype)
     strength_group['rate_final'][...] = rate_final
     strength_group['cv_all'][...] = cv_all
 
@@ -100,7 +100,7 @@ for ss,strength in enumerate(par.stim_strength_all):
 
     mean_weight = np.histogram(wr_times,bins=par.single_bins,weights=wr_weights)[0]/np.histogram(wr_times,bins=par.single_bins)[0]
 
-    strength_group.create_dataset('mean_weight',mean_weight.shape,dtype=mean_weight.dtype)
+    strength_group.require_dataset('mean_weight',mean_weight.shape,dtype=mean_weight.dtype)
     strength_group['mean_weight'][...] = mean_weight
     
 data.close()

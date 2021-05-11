@@ -69,7 +69,7 @@ for ss,strength in enumerate(par.stim_strength_all):
     time_vm = events['times']
     vm      = events['V_m']
 
-    data_strength.create_dataset('time_vm',time_vm.shape,dtype=time_vm.dtype)
-    data_strength.create_dataset('vm',vm.shape,dtype=vm.dtype)
+    data_strength.require_dataset('time_vm',time_vm.shape,dtype=time_vm.dtype)
+    data_strength.require_dataset('vm',vm.shape,dtype=vm.dtype)
     data_strength['time_vm'][...] = time_vm
     data_strength['vm'][...] = vm
