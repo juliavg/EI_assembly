@@ -6,34 +6,33 @@ import h5py as h5
 from scipy.integrate import quad as INT
 from importlib import reload 
 import sys
-sys.path.append('/home/julia/Documents/iSTDP/paper/main/parameters')
-
-import common
-reload(common)
-import common as par
+sys.path.append('/home/julia/Documents/iSTDP/paper/main/support')
+import parameters
+reload(parameters)
+import parameters as par
+import functions
+reload(functions)
+import functions as f
 
 mode = sys.argv[1]
 
+# Create data file
 data      = h5.File(par.path_to_data+'data_single_readout.hdf5','a')
 data_mode = data.require_group(mode)
 
+# Initialize arrays
 rate_out = np.zeros(par.CV_all.shape[0])
 cv_in    = np.zeros((par.CV_all.shape[0],par.assembly_size))
 mean_vm  = np.zeros(par.CV_all.shape[0])
 std_vm   = np.zeros(par.CV_all.shape[0])
 
 for cc,CV in enumerate(par.CV_all):
-    shape = 1./(CV**2)
-    scale = CV**2/par.rho
-
-    intervals = np.random.gamma(shape=shape,scale=scale,size=(par.assembly_size,par.readout_n_spikes))          # ISI distribution
-
-    spk_times = np.floor(np.cumsum(intervals,axis=1)*10000)/10.                             # spike times in ms
+    # Generate spike trains
+    spk_times = f.generate_spk_train(CV,par.rho,par.assembly_size,par.readout_n_spikes)
     spk_times += 1                                         # shifts spike trains by 1ms (spike_generator does not take spikes at 0)
 
-
+    # Initialize NEST kernel
     nest.ResetKernel()
-    
     weight_recorder = nest.Create('weight_recorder')
 
     # Set defaults
@@ -56,7 +55,6 @@ for cc,CV in enumerate(par.CV_all):
                 "x"      : 1.0,
                 'weight_recorder': weight_recorder[0]})
 
-
     # Create nodes
     spike_generator = nest.Create("spike_generator",par.assembly_size)
     parrot_neurons  = nest.Create("parrot_neuron",par.assembly_size)
@@ -78,32 +76,25 @@ for cc,CV in enumerate(par.CV_all):
     nest.Connect([output_neurons[0]],[spike_detector[0]])
     nest.Connect(parrot_neurons,[spike_detector[1]])
     nest.Connect(noise,[output_neurons[0]])
-    
     nest.Connect(parrot_neurons,[output_neurons[1]],'all_to_all',syn_spec=mode)
     nest.Connect(multimeter,[output_neurons[1]])
     nest.Connect(noise,[output_neurons[1]])
-    
 
     # Simulate
     nest.Simulate(par.readout_sim_time)
 
     # Read data
-    events = nest.GetStatus(spike_detector,'events')[0]
-    times  = events['times']
-    
-    events = nest.GetStatus(spike_detector,'events')[1]
-    times_in = events['times']
+    events     = nest.GetStatus(spike_detector,'events')[0]
+    times      = events['times']
+    events     = nest.GetStatus(spike_detector,'events')[1]
+    times_in   = events['times']
     senders_in = events['senders']
     
     # Output rate
-    spk_train_out = np.histogram(times,bins=par.readout_bins)[0]
     for ii in np.arange(par.assembly_size):
-        spk_times = times_in[senders_in==np.unique(senders_in)[ii]]
-        spk_train_in = np.histogram(spk_times,bins=par.readout_bins)[0]
-        isi_in = np.diff(spk_times[spk_times>par.readout_warmup])
-        cv_in[cc,ii] = np.std(isi_in)/np.mean(isi_in)
-
-    isi_out = np.diff(times[times>par.readout_warmup])
+        spk_times    = times_in[senders_in==np.unique(senders_in)[ii]]
+        spk_times    = spk_times[spk_times>par.readout_warmup]
+        cv_in[cc,ii] = f.cv(spk_times)
 
     wr_status  = nest.GetStatus(weight_recorder,'events')[0]
     wr_times   = wr_status['times']
@@ -111,21 +102,17 @@ for cc,CV in enumerate(par.CV_all):
     
     mean_weight = np.histogram(wr_times,bins=par.readout_bins,weights=wr_weights)[0]/np.histogram(wr_times,bins=par.readout_bins)[0]/par.assembly_size
 
-    rate_out[cc] = len(times[times>par.readout_warmup])/(par.readout_sim_time-par.readout_warmup)*1000.
+    rate_out[cc] = f.rate_mean(times[times>par.readout_warmup],(par.readout_sim_time-par.readout_warmup),1)
     
     events = nest.GetStatus(multimeter,'events')[0]
-    vm  = events['V_m']
-    tvm = events['times']
+    vm     = events['V_m']
+    tvm    = events['times']
     mean_vm[cc] = np.mean(vm[tvm>par.readout_warmup])
     std_vm[cc]  = np.std(vm[tvm>par.readout_warmup])
 
-data_mode.require_dataset('rate_out',rate_out.shape,dtype=rate_out.dtype)
-data_mode.require_dataset('cv_in',cv_in.shape,dtype=cv_in.dtype)
-data_mode.require_dataset('mean_vm',mean_vm.shape,dtype=mean_vm.dtype)
-data_mode.require_dataset('std_vm',std_vm.shape,dtype=std_vm.dtype)
-data_mode['rate_out'][...]  = rate_out
-data_mode['cv_in'][...]  = cv_in
-data_mode['mean_vm'][...]  = mean_vm
-data_mode['std_vm'][...]  = std_vm
+f.save_to_group(data_mode,rate_out,'rate_out')
+f.save_to_group(data_mode,cv_in,'cv_in')
+f.save_to_group(data_mode,mean_vm,'mean_vm')
+f.save_to_group(data_mode,std_vm,'std_vm')
 
 data.close()

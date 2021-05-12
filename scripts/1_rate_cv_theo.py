@@ -15,7 +15,7 @@ import parameters as par
 data   = h5.File(par.path_to_data+'data_single_neuron.hdf5','a')
 data_theory = data.require_group('theory')
 
-# Initialize vectors
+# Initialize arrays
 mu_all  = np.arange(par.mu_range[0],par.mu_range[1],par.mu_range[2])
 std_all = np.arange(par.std_range[0],par.std_range[1],par.std_range[2])
 rate    = np.zeros((mu_all.shape[0],std_all.shape[0]))

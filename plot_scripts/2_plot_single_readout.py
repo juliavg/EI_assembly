@@ -4,11 +4,10 @@ import matplotlib.pyplot as plt
 from importlib import reload 
 import h5py as h5
 import sys
-sys.path.append('/home/julia/Documents/iSTDP/paper/main/parameters')
-
-import common
-reload(common)
-import common as par
+sys.path.append('/home/julia/Documents/iSTDP/paper/main/support')
+import parameters
+reload(parameters)
+import parameters as par
 
 matplotlib.rcParams.update({'font.size': 7})
 
