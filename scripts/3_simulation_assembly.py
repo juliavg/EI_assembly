@@ -1,28 +1,47 @@
 import numpy as np
-from importlib import reload  
+from importlib import reload
+import h5py as h5
+import sys
 
+direc = sys.argv[0].split('scripts')[0]
+where = sys.argv[1]
+mode  = sys.argv[2]
+master_seed = int(sys.argv[3])
+stim_idx    = int(sys.argv[4])
+speed       = sys.argv[5]
+
+sys.path.append(direc+'/support')
 import parameters
 reload(parameters)
 import parameters as par
-
-import sys
-sys.path.insert(2,par.path_to_nest) 
+import functions
+reload(functions)
+import functions as f
+sys.path.insert(1,par.path_to_nest[where])
 import nest
 
-master_seed = int(sys.argv[1])
-direc       = '/home/jgallina/homedir/iSTDP/param/'+str(master_seed)+'/'
+data  = h5.File(par.path_to_data[where]+'data_assembly.hdf5','a')
+group = data.require_group(mode)
+group = group.require_group(str(par.WmaxE[stim_idx]))
+group = group.require_group(str(master_seed))
 
-#####################################################################################3
+
+if mode=='static':
+    EE_synapse = 'excitatory'
+elif mode=='plastic':
+    EE_synapse = 'triplets'
+
+#####################################################################################
 
 # Random seeds
-pyrngs    = [np.random.RandomState(s) for s in range(master_seed, master_seed+par.n_threads)]
-grng_seed = master_seed+par.n_threads
-rng_seeds = range(master_seed+par.n_threads+1, master_seed+2*par.n_threads+1)
+pyrngs    = [np.random.RandomState(s) for s in range(master_seed, master_seed+par.n_threads[where])]
+grng_seed = master_seed+par.n_threads[where]
+rng_seeds = range(master_seed+par.n_threads[where]+1, master_seed+2*par.n_threads[where]+1)
 
 # Set parameters of the NEST simulation kernel
 nest.ResetKernel()
 nest.SetKernelStatus({'print_time'          : par.print_time,
-                      'local_num_threads'   : par.n_threads,
+                      'local_num_threads'   : par.n_threads[where],
                       'grng_seed'           : grng_seed,
                       'rng_seeds'           : rng_seeds})
 
@@ -53,7 +72,7 @@ nest.CopyModel('vogels_sprekeler_synapse',
                'iSTDP',
                {'tau'               : par.tau_stdp, 
                 'Wmax'              : -par.WmaxI,
-                'eta'               : par.eta,
+                'eta'               : par.learning_rate[speed]*par.eta,
                 'alpha'             : par.alpha,
                 'weight'            : par.J_I,
                 'weight_recorder'   : weight_I[0]})
@@ -61,13 +80,13 @@ nest.CopyModel('vogels_sprekeler_synapse',
 nest.CopyModel('stdp_triplet_synapse', 
                'triplets',
                {'delay'             : par.delay,
-                'Aminus'            : par.A2_minus,
-                'Aminus_triplet'    : par.A3_minus,
-                'Aplus'             : par.A2_plus,
-                'Aplus_triplet'     : par.A3_plus,
+                'Aminus'            : par.learning_rate[speed]*par.A2_minus,
+                'Aminus_triplet'    : par.learning_rate[speed]*par.A3_minus,
+                'Aplus'             : par.learning_rate[speed]*par.A2_plus,
+                'Aplus_triplet'     : par.learning_rate[speed]*par.A3_plus,
                 'tau_plus'          : par.tau_plus,
                 'tau_plus_triplet'  : par.tau_x,
-                'Wmax'              : par.WmaxE,
+                'Wmax'              : par.WmaxE[stim_idx]*par.J_E,
                 'Wmin'              : par.WminE,
                 'weight'            : par.WminE,
                 'weight_recorder'   : weight_E[0]})
@@ -100,7 +119,7 @@ spk_readout     = nest.Create('spike_detector')
 external_input  = nest.Create('poisson_generator', 2)
 nest.SetStatus(external_input,'rate',par.p_rate)
 noise           = nest.Create('noise_generator')
-nest.SetStatus(noise,{'mean':par.noise_mean,'std':par.noise_std})
+nest.SetStatus(noise,{'mean':par.noise_mean_std[0],'std':par.noise_mean_std[1]})
 
 
 
@@ -118,7 +137,7 @@ nest.Connect(neurons_E, neurons_E,
               'indegree'    : par.C_EE,
               'autapses'    : par.autapses,
               'multapses'   : par.multapses},
-              'triplets')
+              EE_synapse)
 
 nest.Connect(neurons_E, neurons_I,
              {'rule'        : 'fixed_indegree', 
@@ -163,8 +182,8 @@ connect_weight_recorder(weight_I,neurons_I,neurons_E_non_assembly,par.rec_weight
 connect_weight_recorder(weight_I,neurons_I,neurons_E_assembly,par.rec_weight_from)
 connect_weight_recorder(weight_E,neurons_E_non_assembly,neurons_E_non_assembly,par.rec_weight_from)
 sources,targets = connect_weight_recorder(weight_E,neurons_E_assembly,neurons_E_assembly,par.rec_weight_from)
-np.save(direc+"sources.npy",sources)
-np.save(direc+"targets.npy",targets)
+f.save_to_group(group,sources,'sources')
+f.save_to_group(group,targets,'targets')
 
 nest.Connect(noise,readout)
 
@@ -174,36 +193,52 @@ nest.Connect(neurons,spk_all_neuron)
 nest.Connect(readout,spk_readout)
 
 # Simulate -----------------------------------------------------
+def save_spiking_data(group,events):
+    times   = events['times']
+    senders = events['senders']
+    f.save_to_group(group,times,'times')
+    f.save_to_group(group,senders,'senders')
 
-def simulation_cycle(direc,global_time,simulation_time,label):
+def save_weight_data(group,events):
+    times   = events['times']
+    senders = events['senders']
+    targets = events['targets']
+    weights = events['weights']
+    f.save_to_group(group,times,'times')
+    f.save_to_group(group,senders,'senders')
+    f.save_to_group(group,targets,'targets')
+    f.save_to_group(group,weights,'weights')
+
+def simulation_cycle(data,global_time,simulation_time,label):
 
     nest.Simulate(simulation_time)
 
     # Save ---------------------------------------------------------
 
-    extension = "_"+label+".npy"
+    #extension = "_"+label+".npy"
+    group = data.require_group(label)
 
     events = nest.GetStatus(spk_all_sim,'events')[0]
-    np.save(direc+"spk_all_sim"+extension,events)
+    save_spiking_data(group.require_group('all_sim'),events)
     
-    events = nest.GetStatus(spk_all_neuron,'events')[0]
-    np.save(direc+"spk_all_neuron"+extension,events)
+    events  = nest.GetStatus(spk_all_neuron,'events')[0]
+    save_spiking_data(group.require_group('all_neuron'),events)
     
-    events = nest.GetStatus(spk_readout,'events')[0]
-    np.save(direc+"spk_readout"+extension,events)
+    events  = nest.GetStatus(spk_readout,'events')[0]
+    save_spiking_data(group.require_group('readout'),events)
     
     # Weights
-    events = nest.GetStatus(weight_E,'events')[0]
-    np.save(direc+"weight_E"+extension,events)
+    events  = nest.GetStatus(weight_E,'events')[0]
+    save_weight_data(group.require_group('weight_E'),events)    
     
     events = nest.GetStatus(weight_I,'events')[0]
-    np.save(direc+"weight_I"+extension,events)
+    save_weight_data(group.require_group('weight_I'),events)    
     
     connections = nest.GetConnections(neurons,neurons)
-    np.save(direc+"sources"+extension,np.array(nest.GetStatus(connections,'source')))
-    np.save(direc+"targets"+extension,np.array(nest.GetStatus(connections,'target')))
-    np.save(direc+"weights"+extension,np.array(nest.GetStatus(connections,'weight')))
-
+    group = group.require_group('connections')
+    f.save_to_group(group,np.array(nest.GetStatus(connections,'source')),'sources')
+    f.save_to_group(group,np.array(nest.GetStatus(connections,'target')),'targets')
+    f.save_to_group(group,np.array(nest.GetStatus(connections,'weight')),'weights')
 
     # Clean ---------------------------------------------------------
     nest.SetStatus(spk_all_sim,'n_events',0)
@@ -215,18 +250,20 @@ def simulation_cycle(direc,global_time,simulation_time,label):
     return global_time+simulation_time
 
 
-nest.SetStatus(spk_all_neuron,{'start':par.grow_time-par.save_for,'stop':par.grow_time+par.stimulation_time})
+nest.SetStatus(spk_all_neuron,{'start':par.warmup_time-par.save_for,'stop':par.warmup_time+par.stimulation_time})
 
 global_time = 0.
-global_time = simulation_cycle(direc,global_time,par.grow_time,'grow')
+global_time = simulation_cycle(group,global_time,par.warmup_time,'grow')
 
 nest.SetStatus([external_input[0]],'rate',par.stim_strength*par.p_rate)
-global_time = simulation_cycle(direc,global_time,par.stimulation_time,'stim')
+global_time = simulation_cycle(group,global_time,par.stimulation_time,'stim')
 
-stop_time = par.grow_time+par.stimulation_time+par.post_stimulation_time
+stop_time = par.warmup_time+par.stimulation_time+par.post_stimulation_time
 nest.SetStatus(spk_all_neuron,{'start':stop_time-par.save_for,'stop':stop_time})
 
 nest.SetStatus([external_input[0]],'rate',par.p_rate)
-global_time = simulation_cycle(direc,global_time,par.post_stimulation_time,'post')
+global_time = simulation_cycle(group,global_time,par.post_stimulation_time,'post')
 
-simulation_cycle(direc,global_time,par.decay_time,'decay')
+simulation_cycle(group,global_time,par.decay_time,'decay')
+
+data.close()

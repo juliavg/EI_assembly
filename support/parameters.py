@@ -16,7 +16,7 @@ path_to_nest['cluster'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.0_custo
 
 # Simulation
 n_threads  = {}
-n_threads['local']   = 1
+n_threads['local']   = 3
 n_threads['cluster'] = 15
 print_time = True
 
@@ -44,7 +44,7 @@ J_ext    = 0.05*PSC_over_PSP            # Syaptic strength of external input (mV
 J_E      = 0.15*PSC_over_PSP            # Excitatory synaptic strength (mV PSP max amplitude)
 J_I      = -IE_ratio * J_E              # Inhibitory synpatic strength (mV PSP max amplitude)
 
-WmaxE    = 5.*J_E                       # Maximum weight for excitatory plasticity
+WmaxE    = [1.5,3.,5.,6.]                       # Maximum weight for excitatory plasticity
 WminE    = J_E                          # Minimum weight for excitatory plasticity
 
 
@@ -64,22 +64,24 @@ autapses  = False        # Whether or not connections from a neuron to itself ar
 multapses = False        # Whether or not multiple connections between the same pair of neurons are allowed
 
 # Plasticity
-speed_up = 1             # Speedup term for plasticity
+learning_rate = {}            # Speedup term for plasticity
+learning_rate['normal'] = 1
+learning_rate['fast']   = 10
 
 # Triplets
 tau_minus   = 33.7
 tau_plus    = 16.8
 tau_x       = 101.
 tau_y       = 125.
-A2_plus     = speed_up*7.5e-10
-A3_plus     = speed_up*9.3e-3
-A2_minus    = speed_up*7e-3
-A3_minus    = speed_up*2.3e-4
+A2_plus     = 7.5e-10
+A3_plus     = 9.3e-3
+A2_minus    = 7e-3
+A3_minus    = 2.3e-4
 
 # iSTDP
 tau_stdp = 20.                      # Time constant for iSTDP window (ms)
 WmaxI    = 100*J_E                  # Maximum weight of iSTDP connections (mV)
-eta      = speed_up*0.01*J_E        # Learning rate for iSTDP
+eta      = 0.01*J_E        # Learning rate for iSTDP
 rho      = 9                        # Target rate for iSTDP (Hz)
 alpha    = 2*rho*tau_stdp/1000.     # alpha parameter for iSTDP
 
@@ -115,7 +117,7 @@ n_readout       = 2                     # Number of readout neurons
 noise_mean_std  = (150.,0.)             # Mean and standard deviation of input current to readout (other than spiking from E neurons)
 
 
-# Simulation parameters
+# Assembly simulation parameters
 warmup_time             = 2000000.      # Time for network warmup (ms)
 stimulation_time        = 1000.         # Stimulation time (ms)
 post_stimulation_time   = 500000.       # Post stimulation time (ms)
@@ -129,7 +131,7 @@ save_for        = 50000.            # Period for saving spike data from all neur
 # Single neuron simulation
 mu_range      = (1.,20.,1.)                                 # Minimum mu, maximum mu, mu step
 std_range     = (1.,30.,1.)                                 # Minimum std, maximum std, std step
-rates_contour = np.array([0.001,0.007,0.05])                 # Rates to extract contour lines from (/ms)
+rates_contour = np.array([0.001,0.008,0.05])                 # Rates to extract contour lines from (/ms)
 
 n_single_neurons    = 10                                        # Number of single neurons to simulate
 single_sim_time     = 400000.                                   # Total simulation time (ms)

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-WHERE='local'
+WHERE="local"
 SCRIPTS="$(pwd)/scripts/"
 
 # Generates data for static connections
-python3${SCRIPTS}2_single_readout.py $WHERE 'static'
+python3 ${SCRIPTS}2_single_readout.py $WHERE 'static'
 
 # Generates data for plastic connections
 python3 ${SCRIPTS}2_single_readout.py $WHERE 'stp'
