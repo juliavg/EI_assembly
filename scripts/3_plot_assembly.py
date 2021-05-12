@@ -9,7 +9,6 @@ import sys
 direc    = sys.argv[0].split('scripts')[0]+'/'
 where    = sys.argv[1]
 mode     = sys.argv[2]
-stim_idx = int(sys.argv[3])
 
 sys.path.append(direc+'support')
 import parameters
@@ -20,7 +19,7 @@ reload(functions)
 import functions as f
 
 data  = h5.File(direc+'data_assembly.hdf5','r')
-group = data[mode+'/'+str(par.WmaxE[stim_idx])]
+group = data[mode+'/'+str(par.WmaxE[2])]
 seeds = list(group.keys())
 
 

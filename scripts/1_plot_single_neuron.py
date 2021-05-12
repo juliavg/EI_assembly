@@ -68,7 +68,7 @@ for ss,strength in enumerate(par.stim_strength_all):
     ax4b.bar(ss+bar_width/2,height=np.mean(cv),width=bar_width,color=colors_J[ss],yerr=np.std(cv))
 
 ax4.set_xticks(np.arange(par.stim_strength_all.shape[0]))
-ax4.set_xticklabels(['J','2J','3J','4J','5J','6J','7J'])
+ax4.set_xticklabels(['J','2J','3J','4J','5J'])
 ax4.set_ylabel("Firing rate [Hz]")
 ax4b.set_ylabel("CV")
 ax4.set_xlabel(r"$W_{E \to E}$")
