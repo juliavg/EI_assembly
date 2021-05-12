@@ -3,14 +3,14 @@ from importlib import reload
 import h5py as h5
 import sys
 
-direc = sys.argv[0].split('scripts')[0]
+direc = sys.argv[0].split('scripts')[0]+'/'
 where = sys.argv[1]
 mode  = sys.argv[2]
-master_seed = int(sys.argv[3])
 stim_idx    = int(sys.argv[4])
+master_seed = int(sys.argv[3])*100+stim_idx*500
 speed       = sys.argv[5]
 
-sys.path.append(direc+'/support')
+sys.path.append(direc+'support')
 import parameters
 reload(parameters)
 import parameters as par
@@ -20,7 +20,7 @@ import functions as f
 sys.path.insert(1,par.path_to_nest[where])
 import nest
 
-data  = h5.File(par.path_to_data[where]+'data_assembly.hdf5','a')
+data  = h5.File(direc+'data_assembly.hdf5','a')
 group = data.require_group(mode)
 group = group.require_group(str(par.WmaxE[stim_idx]))
 group = group.require_group(str(master_seed))

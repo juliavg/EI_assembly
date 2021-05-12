@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import h5py as h5
 import sys
 
-direc = sys.argv[0].split('scripts')[0]
+direc = sys.argv[0].split('scripts')[0]+'/'
 where = sys.argv[1]
 
-sys.path.append(direc+'/support')
+sys.path.append(direc+'support')
 import functions
 reload(functions)
 import functions as f
@@ -16,7 +16,7 @@ reload(parameters)
 import parameters as par
 
 # Create data file
-data   = h5.File(par.path_to_data[where]+'data_single_neuron.hdf5','a')
+data   = h5.File(direc+'data_single_neuron.hdf5','a')
 data_theory = data.require_group('theory')
 
 # Initialize arrays

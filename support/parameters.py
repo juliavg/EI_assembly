@@ -1,17 +1,11 @@
 import numpy as np
 
 # Paths
-path_to_data            = {}
-path_to_data['local']   = '/home/julia/Documents/iSTDP/paper/main/data/'
-path_to_data['cluster'] = '/home/julia/Documents/iSTDP/paper/main/data/'
-
-path_to_figures            = {}
-path_to_figures['local']   = '/home/julia/Documents/iSTDP/paper/main/figures/'
-path_to_figures['cluster'] = '/home/julia/Documents/iSTDP/paper/main/figures/'
-
 path_to_nest            = {}
-path_to_nest['local']   = '/home/julia/Documents/NEST/nest-2.20.0_custom/lib/python3.8/site-packages'
-path_to_nest['cluster'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.0_custom/lib/python3.6/site-packages'
+path_to_nest['local']  = '/home/julia/Documents/NEST/nest-2.20.0_custom/lib/python3.8/site-packages'
+path_to_nest['brain9'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.0_custom/lib/python3.8/site-packages'
+path_to_nest['brain5'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.0_custom/lib/python3.6/site-packages'
+path_to_nest['brain1'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.1_custom/lib/python3.6/site-packages'
 
 
 # Simulation

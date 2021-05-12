@@ -6,12 +6,12 @@ import h5py as h5
 from matplotlib import colors
 import sys
 
-direc    = sys.argv[0].split('scripts')[0]
+direc    = sys.argv[0].split('scripts')[0]+'/'
 where    = sys.argv[1]
 mode     = sys.argv[2]
 stim_idx = int(sys.argv[3])
 
-sys.path.append(direc+'/support')
+sys.path.append(direc+'support')
 import parameters
 reload(parameters)
 import parameters as par
@@ -19,7 +19,7 @@ import functions
 reload(functions)
 import functions as f
 
-data  = h5.File(par.path_to_data[where]+'data_assembly.hdf5','r')
+data  = h5.File(direc+'data_assembly.hdf5','r')
 group = data[mode+'/'+str(par.WmaxE[stim_idx])]
 seeds = list(group.keys())
 
@@ -246,4 +246,4 @@ ax8.set_xticklabels(['Before','After'])
 
 fig.set_size_inches(7,3.5)
 
-plt.savefig(par.path_to_figures[where]+"figure_assembly.svg",dpi=300)
+plt.savefig(direc+"figure_assembly.svg",dpi=300)

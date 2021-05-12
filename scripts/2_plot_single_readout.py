@@ -5,17 +5,17 @@ from importlib import reload
 import h5py as h5
 import sys
 
-direc = sys.argv[0].split('scripts')[0]
+direc = sys.argv[0].split('scripts')[0]+'/'
 where = sys.argv[1]
 
-sys.path.append(direc+'/support')
+sys.path.append(direc+'support')
 import parameters
 reload(parameters)
 import parameters as par
 
 matplotlib.rcParams.update({'font.size': 7})
 
-data  = h5.File(par.path_to_data[where]+'data_single_readout.hdf5','r')
+data  = h5.File(direc+'data_single_readout.hdf5','r')
 
 def spines(ax):
     ax.spines['right'].set_visible(False)
@@ -69,4 +69,4 @@ fig.text(0.01,0.11,'Short term facilitation',rotation='vertical')
 data.close()
 
 fig.set_size_inches(7,3)
-plt.savefig(par.path_to_figures[where]+"figure_single_readout.svg")
+plt.savefig(direc+"figure_single_readout.svg")

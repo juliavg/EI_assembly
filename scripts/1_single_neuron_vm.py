@@ -3,10 +3,10 @@ import numpy as np
 import h5py as h5
 import sys
 
-direc = sys.argv[0].split('scripts')[0]
+direc = sys.argv[0].split('scripts')[0]+'/'
 where = sys.argv[1]
 
-sys.path.append(direc+'/support')
+sys.path.append(direc+'support')
 import parameters
 reload(parameters)
 import parameters as par
@@ -18,7 +18,7 @@ sys.path.insert(2,par.path_to_nest[where])
 import nest
 
 # Create data file
-data     = h5.File(par.path_to_data[where]+'data_single_neuron.hdf5','r+')
+data     = h5.File(direc+'data_single_neuron.hdf5','r+')
 data_sim = data['simulation']
 
 for ss,strength in enumerate(par.stim_strength_all):
