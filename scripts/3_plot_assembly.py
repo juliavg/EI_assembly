@@ -1,26 +1,27 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+from importlib import reload
+import h5py as h5
 from matplotlib import colors
 import sys
 
-mode    = sys.argv[1]
-which_j = str(sys.argv[2])
+direc    = sys.argv[0].split('scripts')[0]
+where    = sys.argv[1]
+mode     = sys.argv[2]
+stim_idx = int(sys.argv[3])
 
-seeds_all = {'static'  : {
-             'J6'      : [1500]},
-             'plastic' : {
-             'J1.5'    : [500,600,700,800,900],
-             'J3'      : [1000,1100,1200,1300,1400],
-             'J5'      : [0,100,200,300,400]},
-             'speedup' : {
-             'J1.5'    : [1600],
-             'J3'      : [1700],
-             'J5'      : [1800]}}
+sys.path.append(direc+'/support')
+import parameters
+reload(parameters)
+import parameters as par
+import functions
+reload(functions)
+import functions as f
 
-seeds = seeds_all[mode][which_j]
-direc_all    = '../data/assembly/'+mode+'/'+which_j+'/'
-direc_single = direc_all+str(seeds[0])+'/'
+data  = h5.File(par.path_to_data[where]+'data_assembly.hdf5','r')
+group = data[mode+'/'+str(par.WmaxE[stim_idx])]
+seeds = list(group.keys())
 
 
 matplotlib.rcParams.update({'font.size': 7})
@@ -35,69 +36,61 @@ color_exc = np.array([204,235,197])/255.
 cmap = 'viridis'
 cmap_w = 'seismic'
 
-NE = 1600
-NI = 400               # Number of inhibitory neurons
-N_neurons = NE + NI   # Total number of neurons in the network
-assembly_size = int(NE*0.1)    # Number of neurons to be stimulated
+senders      = np.array([])
+times        = np.array([])
+group_single = group[seeds[0]+'/steps']
 
-senders         = np.array([])
-times           = np.array([])
+for label in list(group_single.keys()):
+    senders = np.concatenate((senders,np.array(group_single[label+"/all_neuron/senders"])))#np.concatenate((senders,events['senders']))
+    times   = np.concatenate((times,np.array(group_single[label+"/all_neuron/times"])))#np.concatenate((times,events['times']))
 
-for label in ['_grow','_stim','_post']:
-    events  = np.load(direc_single+"spk_all_neuron"+label+".npy",allow_pickle=True)
-    events  = events[()]
-    senders = np.concatenate((senders,events['senders']))
-    times   = np.concatenate((times,events['times']))
+idx     = np.argsort(times)
+senders = senders[idx]
+times   = times[idx]
 
 all_senders = np.unique(senders)
-ass_id = all_senders[all_senders<assembly_size]
-exc_id = all_senders[(all_senders>assembly_size) & (all_senders<(NE+1))]
-inh_id = all_senders[all_senders>(NE+1)]
+ass_id = all_senders[all_senders<par.assembly_size]
+exc_id = all_senders[(all_senders>par.assembly_size) & (all_senders<(par.N_E+1))]
+inh_id = all_senders[all_senders>(par.N_E+1)]
 
-growth_time = 2000000.
-stim_time   = 1000.
-post_time   = 500000.
-total_time  = growth_time+stim_time+post_time
-
-interval = 50000.
+total_time  = par.warmup_time+par.stimulation_time+par.post_stimulation_time
 
 raster_time = 3000.
-raster_n_neurons = assembly_size
+raster_n_neurons = par.assembly_size
 
-time_before_upp = growth_time
-time_before_low = time_before_upp - interval
-time_stim_upp   = growth_time + stim_time
-time_stim_low   = growth_time
-time_post_upp   = growth_time + stim_time + post_time
-time_post_low   = time_post_upp - interval
+time_before_upp = par.warmup_time
+time_before_low = time_before_upp - par.save_for
+time_stim_upp   = par.warmup_time + par.stimulation_time
+time_stim_low   = par.warmup_time
+time_post_upp   = par.warmup_time + par.stimulation_time + par.post_stimulation_time
+time_post_low   = time_post_upp - par.save_for
 
 
 # Analysis
 # Rate
-rate_before = np.zeros(N_neurons)
-rate_stim   = np.zeros(N_neurons)
-rate_post   = np.zeros(N_neurons)
+rate_before = np.zeros(par.N_neurons)
+rate_stim   = np.zeros(par.N_neurons)
+rate_post   = np.zeros(par.N_neurons)
 
-cv_before = np.zeros(N_neurons)
-cv_stim   = np.zeros(N_neurons)
-cv_post   = np.zeros(N_neurons)
+cv_before = np.zeros(par.N_neurons)
+cv_stim   = np.zeros(par.N_neurons)
+cv_post   = np.zeros(par.N_neurons)
 
-def rate_and_cv(times,interval):
-    rate = len(times)/interval*1000.
-    isi  = np.diff(times)
-    cv   = np.std(isi)/np.mean(isi)
-    return (rate,cv)
+def rate_and_cv(times,period,n_neurons):
+    rate = f.rate_mean(times,period,n_neurons)
+    cv   = f.cv(times)
+    return rate,cv
 
 for nn,neuron in enumerate(np.unique(senders)):
     times_neuron = times[senders==neuron]
-    rate_before[nn],cv_before[nn] = rate_and_cv(times_neuron[(times_neuron>time_before_low) & (times_neuron<time_before_upp)],interval)
-    rate_stim[nn],cv_stim[nn]     = rate_and_cv(times_neuron[(times_neuron>time_stim_low) & (times_neuron<time_stim_upp)],stim_time)
-    rate_post[nn],cv_post[nn]     = rate_and_cv(times_neuron[(times_neuron>time_post_low) & (times_neuron<time_post_upp)],interval)
+    rate_before[nn],cv_before[nn] = rate_and_cv(times_neuron[(times_neuron>time_before_low) & (times_neuron<time_before_upp)],par.save_for,1)
+    rate_stim[nn],cv_stim[nn] = rate_and_cv(times_neuron[(times_neuron>time_stim_low) & (times_neuron<time_stim_upp)],par.stimulation_time,1)
+    rate_post[nn],cv_post[nn] = rate_and_cv(times_neuron[(times_neuron>time_post_low) & (times_neuron<time_post_upp)],par.save_for,1)
 
 raster_times   = times[np.isin(senders,np.concatenate((ass_id[:raster_n_neurons],exc_id[:raster_n_neurons])))]
 raster_senders = senders[np.isin(senders,np.concatenate((ass_id[:raster_n_neurons],exc_id[:raster_n_neurons])))]
-raster_senders_b = raster_senders[(raster_times<growth_time) & (raster_times>(growth_time-raster_time))]
-raster_times_b = raster_times[(raster_times<growth_time) & (raster_times>(growth_time-raster_time))]
+raster_senders_b = raster_senders[(raster_times<par.warmup_time) & (raster_times>(par.warmup_time-raster_time))]
+raster_times_b = raster_times[(raster_times<par.warmup_time) & (raster_times>(par.warmup_time-raster_time))]
 raster_senders_a = raster_senders[(raster_times<total_time) & (raster_times>(total_time-raster_time))]
 raster_times_a = raster_times[(raster_times<total_time) & (raster_times>(total_time-raster_time))]
 
@@ -110,10 +103,10 @@ def create_matrix(array):
         matrix[(ii//5)*a:(ii//5+1)*a,(ii%5)*b:(ii%5+1)*b] = array[ii*a*b:(ii+1)*a*b].reshape(a,b)
     return matrix
     
-rate_matrix_before = create_matrix(rate_before[:NE])
-rate_matrix_post   = create_matrix(rate_post[:NE])
-cv_matrix_before   = create_matrix(cv_before[:NE])
-cv_matrix_post     = create_matrix(cv_post[:NE])
+rate_matrix_before = create_matrix(rate_before[:par.N_E])
+rate_matrix_post   = create_matrix(rate_post[:par.N_E])
+cv_matrix_before   = create_matrix(cv_before[:par.N_E])
+cv_matrix_post     = create_matrix(cv_post[:par.N_E])
 
 min_rate = min([np.min(rate_matrix_before),np.min(rate_matrix_post)])
 max_rate = max([np.max(rate_matrix_before),np.max(rate_matrix_post)])
@@ -131,28 +124,29 @@ def create_mean_matrix(matrix_original):
             matrix_reduced[ii,jj] = np.mean(matrix_patch[np.nonzero(matrix_patch)])
     return matrix_reduced
 
-sources = np.load(direc_single+"sources_grow.npy")-3
-targets = np.load(direc_single+"targets_grow.npy")-3
-weights = np.load(direc_single+"weights_grow.npy")
-matrix_before = np.zeros((N_neurons,N_neurons))
+
+
+sources = np.array(group_single['grow/connections/sources'])-3
+targets = np.array(group_single['grow/connections/targets'])-3
+weights = np.array(group_single['grow/connections/weights'])
+
+matrix_before = np.zeros((par.N_neurons,par.N_neurons))
 matrix_before[targets,sources] = weights
 
-sources = np.load(direc_single+"sources_post.npy")-3
-targets = np.load(direc_single+"targets_post.npy")-3
-weights = np.load(direc_single+"weights_post.npy")
-matrix_after = np.zeros((N_neurons,N_neurons))
+sources = np.array(group_single['post/connections/sources'])-3
+targets = np.array(group_single['post/connections/targets'])-3
+weights = np.array(group_single['post/connections/weights'])
+matrix_after = np.zeros((par.N_neurons,par.N_neurons))
 matrix_after[targets,sources] = weights
 
-weight_before = create_mean_matrix(matrix_before[:NE,:])
-weight_after = create_mean_matrix(matrix_after[:NE,:])
+weight_before = create_mean_matrix(matrix_before[:par.N_E,:])
+weight_after = create_mean_matrix(matrix_after[:par.N_E,:])
 
 min_w = min([np.min(weight_before),np.min(weight_after)])
 max_w = max([np.max(weight_before),np.max(weight_after)])
 norm = colors.DivergingNorm(vmin=min_w, vcenter=0., vmax=max_w)
 
 fig = plt.figure(figsize=(7,3.5))
-
-#ax1  = fig.add_axes([0.1,0.6,0.1,0.35])
 
 ax2a = fig.add_axes([0.3,0.42,0.1,0.2])  
 ax2b = fig.add_axes([0.3,0.12,0.1,0.2])  
@@ -189,8 +183,8 @@ im = ax4b.imshow(weight_after,vmin=min_w,vmax=max_w,cmap=cmap_w,norm=norm,raster
 cbar = fig.colorbar(im,cax=ax4c)
 cbar.set_label("Weight [pA]")
 
-a = assembly_size
-b = NE
+a = par.assembly_size
+b = par.N_E
 width=0.3
 
 ax6.bar(0-width/2,height=np.mean(rate_before[:a]),width=width,yerr=np.std(rate_before[:a]),color=color_ass)
@@ -211,7 +205,6 @@ ax7.set_xticklabels(['Before','After'])
 
 for ii,neuron in enumerate(np.unique(raster_senders_b)):
     times_temp = raster_times_b[raster_senders_b==neuron]/1000.
-    #ax9.plot(times_temp,ii*np.ones(len(times_temp)),'o',color='grey',markersize=0.5,linewidth=0)
     ax9.scatter(times_temp,ii*np.ones(len(times_temp)),color='grey',s=0.1,linewidth=0,rasterized=True)
 ax9.set_ylabel("Before")
 
@@ -231,36 +224,21 @@ readout_ass_after_static  = []
 readout_exc_before_static = []
 readout_exc_after_static  = []
 for seed in seeds:
-    events           = np.load(direc_all+str(seed)+'/spk_readout_post.npy',allow_pickle=True)
-    events           = events[()]
-    readout_senders  = events['senders']
-    readout_times    = events['times']
-    times_ass_plastic = readout_times[(readout_senders==2003)&(readout_times>(max(readout_times)-50000.))]
-    times_exc_plastic = readout_times[(readout_senders==2004)&(readout_times>(max(readout_times)-50000.))]
-    times_ass_static  = readout_times[(readout_senders==2005)&(readout_times>(max(readout_times)-50000.))]
-    times_exc_static  = readout_times[(readout_senders==2006)&(readout_times>(max(readout_times)-50000.))]
-    readout_ass_after_plastic.append(len(times_ass_plastic)/50.)
-    readout_exc_after_plastic.append(len(times_exc_plastic)/50.)
-    readout_ass_after_static.append(len(times_ass_static)/50.)
-    readout_exc_after_static.append(len(times_exc_static)/50.)
-    times_ass_plastic = readout_times[(readout_senders==2003)&(readout_times>(growth_time-50000.))&(readout_times<growth_time)]
-    times_exc_plastic = readout_times[(readout_senders==2004)&(readout_times>(growth_time-50000.))&(readout_times<growth_time)]
-    times_ass_static  = readout_times[(readout_senders==2005)&(readout_times>(growth_time-50000.))&(readout_times<growth_time)]
-    times_exc_static  = readout_times[(readout_senders==2006)&(readout_times>(growth_time-50000.))&(readout_times<growth_time)]
-    readout_ass_before_plastic.append(len(times_ass_plastic)/50.)
-    readout_exc_before_plastic.append(len(times_exc_plastic)/50.)
-    readout_ass_before_static.append(len(times_ass_static)/50.)
-    readout_exc_before_static.append(len(times_exc_static)/50.)
+    readout_senders   = np.array(group[str(seed)+'/post/readout/senders'])
+    readout_times     = np.array(group[str(seed)+'/post/readout/times'])
+    times_ass_plastic = readout_times[(readout_senders==np.unique(readout_senders)[0])&(readout_times>(max(readout_times)-par.save_for))]
+    times_exc_plastic = readout_times[(readout_senders==np.unique(readout_senders)[1])&(readout_times>(max(readout_times)-par.save_for))]
+    readout_ass_after_plastic.append(f.rate_mean(times_ass_plastic,par.save_for,1))
+    readout_exc_after_plastic.append(f.rate_mean(times_exc_plastic,par.save_for,1))
+    times_ass_plastic = readout_times[(readout_senders==np.unique(readout_senders)[0])&(readout_times>(par.warmup_time-par.save_for))&(readout_times<par.warmup_time)]
+    times_exc_plastic = readout_times[(readout_senders==np.unique(readout_senders)[1])&(readout_times>(par.warmup_time-par.save_for))&(readout_times<par.warmup_time)]
+    readout_ass_before_plastic.append(f.rate_mean(times_ass_plastic,par.save_for,1))
+    readout_exc_before_plastic.append(f.rate_mean(times_exc_plastic,par.save_for,1))
     
 ax8.bar(0-width/2,height=np.mean(readout_ass_before_plastic),width=width,yerr=np.std(readout_ass_before_plastic),color=color_ass)
 ax8.bar(0+width/2,height=np.mean(readout_exc_before_plastic),width=width,yerr=np.std(readout_exc_before_plastic),color=color_exc)   
 ax8.bar(1-width/2,height=np.mean(readout_ass_after_plastic),width=width,yerr=np.std(readout_ass_after_plastic),color=color_ass)
 ax8.bar(1+width/2,height=np.mean(readout_exc_after_plastic),width=width,yerr=np.std(readout_exc_after_plastic),color=color_exc)
-
-ax8.bar(2-width/2,height=np.mean(readout_ass_before_static),width=width,yerr=np.std(readout_ass_before_static),color='g')
-ax8.bar(2+width/2,height=np.mean(readout_exc_before_static),width=width,yerr=np.std(readout_exc_before_static),color='k')   
-ax8.bar(3-width/2,height=np.mean(readout_ass_after_static),width=width,yerr=np.std(readout_ass_after_static),color='g')
-ax8.bar(3+width/2,height=np.mean(readout_exc_after_static),width=width,yerr=np.std(readout_exc_after_static),color='k')
 
 ax8.set_ylabel("Readout rate [Hz]")
 ax8.set_xticks([0,1])
@@ -268,7 +246,4 @@ ax8.set_xticklabels(['Before','After'])
 
 fig.set_size_inches(7,3.5)
 
-plt.savefig('../figures/figure_assembly_'+mode+'_'+which_j+'.svg',dpi=300)
-
-#plt.show()
-
+plt.savefig(par.path_to_figures[where]+"figure_assembly.svg",dpi=300)
