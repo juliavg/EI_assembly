@@ -7,11 +7,11 @@ import matplotlib.cm as cmx
 import h5py as h5
 
 import sys
-sys.path.append('/home/julia/Documents/iSTDP/paper/main/parameters')
+sys.path.append('/home/julia/Documents/iSTDP/paper/main/support')
 
-import common
-reload(common)
-import common as par
+import parameters
+reload(parameters)
+import parameters as par
 
 matplotlib.rcParams.update({'font.size': 7})
 direc = par.path_to_data+'/single_neuron/'
