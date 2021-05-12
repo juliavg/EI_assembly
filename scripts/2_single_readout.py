@@ -6,7 +6,12 @@ import h5py as h5
 from scipy.integrate import quad as INT
 from importlib import reload 
 import sys
-sys.path.append('/home/julia/Documents/iSTDP/paper/main/support')
+
+direc = sys.argv[0].split('scripts')[0]
+where = sys.argv[1]
+synapse_type = sys.argv[2]
+
+sys.path.append(direc+'/support')
 import parameters
 reload(parameters)
 import parameters as par
@@ -14,11 +19,10 @@ import functions
 reload(functions)
 import functions as f
 
-mode = sys.argv[1]
 
 # Create data file
-data      = h5.File(par.path_to_data+'data_single_readout.hdf5','a')
-data_mode = data.require_group(mode)
+data      = h5.File(par.path_to_data[where]+'data_single_readout.hdf5','a')
+data_mode = data.require_group(synapse_type)
 
 # Initialize arrays
 rate_out = np.zeros(par.CV_all.shape[0])
@@ -72,11 +76,11 @@ for cc,CV in enumerate(par.CV_all):
 
     # Connect nodes
     nest.Connect(spike_generator,parrot_neurons,'one_to_one')
-    nest.Connect(parrot_neurons,[output_neurons[0]],'all_to_all',syn_spec=mode)
+    nest.Connect(parrot_neurons,[output_neurons[0]],'all_to_all',syn_spec=synapse_type)
     nest.Connect([output_neurons[0]],[spike_detector[0]])
     nest.Connect(parrot_neurons,[spike_detector[1]])
     nest.Connect(noise,[output_neurons[0]])
-    nest.Connect(parrot_neurons,[output_neurons[1]],'all_to_all',syn_spec=mode)
+    nest.Connect(parrot_neurons,[output_neurons[1]],'all_to_all',syn_spec=synapse_type)
     nest.Connect(multimeter,[output_neurons[1]])
     nest.Connect(noise,[output_neurons[1]])
 

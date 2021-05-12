@@ -5,18 +5,20 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors 
 import matplotlib.cm as cmx
 import h5py as h5
-
 import sys
-sys.path.append('/home/julia/Documents/iSTDP/paper/main/support')
 
+direc = sys.argv[0].split('scripts')[0]
+where = sys.argv[1]
+
+sys.path.append(direc+'/support')
 import parameters
 reload(parameters)
 import parameters as par
 
-matplotlib.rcParams.update({'font.size': 7})
-direc = par.path_to_data+'/single_neuron/'
 
-data = h5.File(par.path_to_data+'data_single_neuron.hdf5','r')
+matplotlib.rcParams.update({'font.size': 7})
+
+data = h5.File(par.path_to_data[where]+'data_single_neuron.hdf5','r')
 
 # Plot parameters
 bar_width = 0.3
@@ -132,4 +134,4 @@ fig.text(0.65,0.46,'G')
 data.close()
 
 fig.set_size_inches(7,3)
-plt.savefig(par.path_to_figures+"figure_single_neuron.svg",dpi=300)
+plt.savefig(par.path_to_figures[where]+"figure_single_neuron.svg",dpi=300)
