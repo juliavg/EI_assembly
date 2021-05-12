@@ -10,8 +10,6 @@ direc = sys.argv[0].split('scripts')[0]+'/'
 where = sys.argv[1]
 synapse_type = sys.argv[2]
 
-sys.path.insert(2,par.path_to_nest[where])
-import nest
 sys.path.append(direc+'support')
 import parameters
 reload(parameters)
@@ -20,6 +18,8 @@ import functions
 reload(functions)
 import functions as f
 
+sys.path.insert(2,par.path_to_nest[where])
+import nest
 
 # Create data file
 data      = h5.File(direc+'data_single_readout.hdf5','a')
