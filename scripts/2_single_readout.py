@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import nest
 import scipy.special as sp
 import h5py as h5
 from scipy.integrate import quad as INT
@@ -11,6 +10,8 @@ direc = sys.argv[0].split('scripts')[0]+'/'
 where = sys.argv[1]
 synapse_type = sys.argv[2]
 
+sys.path.insert(2,par.path_to_nest[where])
+import nest
 sys.path.append(direc+'support')
 import parameters
 reload(parameters)
