@@ -1,0 +1,16 @@
+# Ignore data
+*.hdf5
+data/
+
+# Ignore figures
+*.svg
+*.pdf
+
+# Ignore support
+support/
+
+# Ignore test
+test/
+
+# Ignore pyc
+*.pyc
