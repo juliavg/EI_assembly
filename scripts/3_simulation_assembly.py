@@ -8,7 +8,6 @@ where = sys.argv[1]
 mode  = sys.argv[2]
 stim_idx    = int(sys.argv[4])
 master_seed = int(sys.argv[3])*100+stim_idx*500
-speed       = sys.argv[5]
 
 sys.path.append(direc+'support')
 import parameters
@@ -20,7 +19,7 @@ import functions as f
 sys.path.insert(1,par.path_to_nest[where])
 import nest
 
-data  = h5.File(direc+'data_assembly.hdf5','a')
+data  = h5.File(direc+'data_assembly_'+mode+'.hdf5','a')
 group = data.require_group(mode)
 group = group.require_group(str(par.WmaxE[stim_idx]))
 group = group.require_group(str(master_seed))
@@ -28,8 +27,13 @@ group = group.require_group(str(master_seed))
 
 if mode=='static':
     EE_synapse = 'excitatory'
+    speed = 'normal'
 elif mode=='plastic':
     EE_synapse = 'triplets'
+    speed = 'normal'
+elif mode=='speedup':
+    EE_synapse = 'triplets'
+    speed = 'fast'
 
 #####################################################################################
 
@@ -215,7 +219,6 @@ def simulation_cycle(data,global_time,simulation_time,label):
 
     # Save ---------------------------------------------------------
 
-    #extension = "_"+label+".npy"
     group = data.require_group(label)
 
     events = nest.GetStatus(spk_all_sim,'events')[0]
@@ -256,7 +259,11 @@ nest.SetStatus(spk_all_neuron,{'start':par.warmup_time-par.save_for,'stop':par.w
 global_time = 0.
 global_time = simulation_cycle(group,global_time,par.warmup_time,'grow')
 
-nest.SetStatus([external_input[0]],'rate',par.stim_strength*par.p_rate)
+if mode=='plastic':
+    nest.SetStatus([external_input[0]],'rate',par.stim_strength*par.p_rate)
+elif mode=='static':
+    connections = nest.GetConnections(neurons_E[:par.assembly_size],neurons_E[:par.assembly_size])
+    nest.SetStatus(connections,'weight',par.WmaxE[stim_idx])
 global_time = simulation_cycle(group,global_time,par.stimulation_time,'stim')
 
 stop_time = par.warmup_time+par.stimulation_time+par.post_stimulation_time

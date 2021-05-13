@@ -6,9 +6,8 @@ import h5py as h5
 from matplotlib import colors
 import sys
 
-direc    = sys.argv[0].split('scripts')[0]+'/'
-where    = sys.argv[1]
-mode     = sys.argv[2]
+direc = sys.argv[0].split('scripts')[0]
+mode  = sys.argv[1]
 
 sys.path.append(direc+'support')
 import parameters
@@ -18,7 +17,7 @@ import functions
 reload(functions)
 import functions as f
 
-data  = h5.File(direc+'data_assembly.hdf5','r')
+data  = h5.File(direc+'data_assembly_'+mode+'.hdf5','r')
 group = data[mode+'/'+str(par.WmaxE[2])]
 seeds = list(group.keys())
 
@@ -40,8 +39,8 @@ times        = np.array([])
 group_single = group[seeds[0]+'/steps']
 
 for label in list(group_single.keys()):
-    senders = np.concatenate((senders,np.array(group_single[label+"/all_neuron/senders"])))#np.concatenate((senders,events['senders']))
-    times   = np.concatenate((times,np.array(group_single[label+"/all_neuron/times"])))#np.concatenate((times,events['times']))
+    senders = np.concatenate((senders,np.array(group_single[label+"/all_neuron/senders"])))
+    times   = np.concatenate((times,np.array(group_single[label+"/all_neuron/times"])))
 
 idx     = np.argsort(times)
 senders = senders[idx]
@@ -223,8 +222,8 @@ readout_ass_after_static  = []
 readout_exc_before_static = []
 readout_exc_after_static  = []
 for seed in seeds:
-    readout_senders   = np.array(group[str(seed)+'/post/readout/senders'])
-    readout_times     = np.array(group[str(seed)+'/post/readout/times'])
+    readout_senders   = np.array(group[str(seed)+'/steps/post/readout/senders'])
+    readout_times     = np.array(group[str(seed)+'/steps/post/readout/times'])
     times_ass_plastic = readout_times[(readout_senders==np.unique(readout_senders)[0])&(readout_times>(max(readout_times)-par.save_for))]
     times_exc_plastic = readout_times[(readout_senders==np.unique(readout_senders)[1])&(readout_times>(max(readout_times)-par.save_for))]
     readout_ass_after_plastic.append(f.rate_mean(times_ass_plastic,par.save_for,1))
@@ -245,4 +244,4 @@ ax8.set_xticklabels(['Before','After'])
 
 fig.set_size_inches(7,3.5)
 
-plt.savefig(direc+"figure_assembly.svg",dpi=300)
+plt.savefig(direc+"figure_assembly_"+mode+".svg",dpi=300)

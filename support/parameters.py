@@ -11,7 +11,7 @@ path_to_nest['brain1'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.1_custom
 # Simulation
 n_threads  = {}
 n_threads['local']   = 3
-n_threads['cluster'] = 15
+n_threads['brain5'] = 15
 print_time = True
 
 
@@ -115,7 +115,9 @@ noise_mean_std  = (150.,0.)             # Mean and standard deviation of input c
 warmup_time             = 2000000.      # Time for network warmup (ms)
 stimulation_time        = 1000.         # Stimulation time (ms)
 post_stimulation_time   = 500000.       # Post stimulation time (ms)
-decay_time              = 1500000.      # Decay time (ms)
+decay_time              = {}            # Decay time (ms)
+decay_time['normal']    = 1500000.
+decay_time['fast']      = 2500000. 
 
 rec_spk_from    = 10                # Number of excitatory neurons to record spikes from
 rec_weight_from = 5                 # Number of pairs to record weight from

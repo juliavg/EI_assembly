@@ -2,10 +2,9 @@
 
 SCRIPTS="$(pwd)/scripts/"
 WHERE="local"
-MODE="plastic"
-MASTER_SEED=0
+MODE="speedup"
+MASTER_SEED=7
 STIM_IDX=2
-SPEED="normal"
 
 # Runs simulation
 python3 ${SCRIPTS}3_simulation_assembly.py $WHERE $MODE $MASTER_SEED $STIM_IDX
