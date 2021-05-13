@@ -19,7 +19,7 @@ import functions as f
 sys.path.insert(1,par.path_to_nest[where])
 import nest
 
-data  = h5.File(direc+'data_assembly_'+mode+'.hdf5','a')
+data  = h5.File(direc+'data_assembly.hdf5','a')
 group = data.require_group(mode)
 group = group.require_group(str(par.WmaxE[stim_idx]))
 group = group.require_group(str(master_seed))
@@ -263,7 +263,7 @@ if mode=='plastic':
     nest.SetStatus([external_input[0]],'rate',par.stim_strength*par.p_rate)
 elif mode=='static':
     connections = nest.GetConnections(neurons_E[:par.assembly_size],neurons_E[:par.assembly_size])
-    nest.SetStatus(connections,'weight',par.WmaxE[stim_idx])
+    nest.SetStatus(connections,'weight',par.WmaxE[stim_idx]*par.J_E)
 global_time = simulation_cycle(group,global_time,par.stimulation_time,'stim')
 
 stop_time = par.warmup_time+par.stimulation_time+par.post_stimulation_time

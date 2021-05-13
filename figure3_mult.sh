@@ -22,4 +22,4 @@ do
 done
 
 # Plots
-python3 ${SCRIPTS}3_plot_assembly.py $MODE
+python3 ${SCRIPTS}3_plot_assembly.py $MODE $STIM_IDX
