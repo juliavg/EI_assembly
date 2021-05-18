@@ -6,8 +6,8 @@ import sys
 direc = sys.argv[0].split('scripts')[0]+'/'
 where = sys.argv[1]
 mode  = sys.argv[2]
+master_seed = int(sys.argv[3])*100
 stim_idx    = int(sys.argv[4])
-master_seed = int(sys.argv[3])*100+stim_idx*500
 
 sys.path.append(direc+'support')
 import parameters
@@ -259,11 +259,11 @@ nest.SetStatus(spk_all_neuron,{'start':par.warmup_time-par.save_for,'stop':par.w
 global_time = 0.
 global_time = simulation_cycle(group,global_time,par.warmup_time,'grow')
 
-if mode=='plastic':
-    nest.SetStatus([external_input[0]],'rate',par.stim_strength*par.p_rate)
-elif mode=='static':
+if mode=='static':
     connections = nest.GetConnections(neurons_E[:par.assembly_size],neurons_E[:par.assembly_size])
     nest.SetStatus(connections,'weight',par.WmaxE[stim_idx]*par.J_E)
+else:           # mode=='plastic' or mode=='speedup'
+    nest.SetStatus([external_input[0]],'rate',par.stim_strength*par.p_rate)
 global_time = simulation_cycle(group,global_time,par.stimulation_time,'stim')
 
 stop_time = par.warmup_time+par.stimulation_time+par.post_stimulation_time
@@ -272,6 +272,6 @@ nest.SetStatus(spk_all_neuron,{'start':stop_time-par.save_for,'stop':stop_time})
 nest.SetStatus([external_input[0]],'rate',par.p_rate)
 global_time = simulation_cycle(group,global_time,par.post_stimulation_time,'post')
 
-simulation_cycle(group,global_time,par.decay_time,'decay')
+simulation_cycle(group,global_time,par.decay_time[speed],'decay')
 
 data.close()

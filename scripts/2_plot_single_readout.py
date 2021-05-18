@@ -69,4 +69,4 @@ fig.text(0.01,0.11,'Short term facilitation',rotation='vertical')
 data.close()
 
 fig.set_size_inches(7,3)
-plt.savefig(direc+"figure_single_readout.svg")
+plt.savefig(direc+"figure_single_readout.pdf")

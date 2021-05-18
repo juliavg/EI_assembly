@@ -204,12 +204,12 @@ ax7.set_xticklabels(['Before','After'])
 
 for ii,neuron in enumerate(np.unique(raster_senders_b)):
     times_temp = raster_times_b[raster_senders_b==neuron]/1000.
-    ax9.scatter(times_temp,ii*np.ones(len(times_temp)),color='grey',s=0.1,linewidth=0,rasterized=True)
+    ax9.scatter(times_temp,ii*np.ones(len(times_temp)),color='grey',s=0.2,linewidth=0,rasterized=False)
 ax9.set_ylabel("Before")
 
 for ii,neuron in enumerate(np.unique(raster_senders_a)):
     times_temp = raster_times_a[raster_senders_a==neuron]/1000.
-    ax9a.scatter(times_temp,ii*np.ones(len(times_temp)),color='grey',s=0.1,linewidth=0,rasterized=True)
+    ax9a.scatter(times_temp,ii*np.ones(len(times_temp)),color='grey',s=0.2,linewidth=0,rasterized=False)
 ax9a.set_ylabel("After")
 ax9a.set_xlabel("Time [s]")
 
@@ -245,4 +245,4 @@ ax8.set_xticklabels(['Before','After'])
 
 fig.set_size_inches(7,3.5)
 
-plt.savefig(direc+"figure_assembly_"+mode+".svg",dpi=300)
+plt.savefig(direc+"figure_assembly_"+mode+".pdf",dpi=300)

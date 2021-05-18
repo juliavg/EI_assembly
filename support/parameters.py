@@ -125,8 +125,8 @@ save_for        = 50000.            # Period for saving spike data from all neur
 
 
 # Single neuron simulation
-mu_range      = (1.,20.,1.)                                 # Minimum mu, maximum mu, mu step
-std_range     = (1.,30.,1.)                                 # Minimum std, maximum std, std step
+mu_range      = (1.,20.,.1)                                 # Minimum mu, maximum mu, mu step
+std_range     = (1.,30.,.1)                                 # Minimum std, maximum std, std step
 rates_contour = np.array([0.001,0.008,0.05])                 # Rates to extract contour lines from (/ms)
 
 n_single_neurons    = 10                                        # Number of single neurons to simulate

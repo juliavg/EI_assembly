@@ -47,7 +47,59 @@ def rate_time_series(spk_times,bins,n_neurons):
 def cv(spk_times):
     isi = np.diff(spk_times)
     return np.std(isi)/np.mean(isi)
+
+def cc(times_spikes_pre,times_spikes_post,binsize):
+    time_bins        = np.arange(0,min([max(times_spikes_pre),max(times_spikes_post)]),binsize)
+    spk_train_source = np.histogram(times_spikes_pre,bins=time_bins)[0]
+    spk_train_target = np.histogram(times_spikes_post,bins=time_bins)[0]
+    spk_train_source[spk_train_source>1] = 1
+    spk_train_target[spk_train_target>1] = 1
+    cc = np.corrcoef(spk_train_source,spk_train_target)[0,1]
+    return cc
     
+def calculate_weight_triplets(times_spikes_pre,times_spikes_post):
+    r1 = 0
+    r2 = 0
+    o1 = 0
+    o2 = 0
+
+    last_spk_pre = 0
+    last_spk_post = 0
+
+    weight_offline = {}
+
+    weight = WmaxE
+    for ee,spk_time_pre in enumerate(times_spikes_pre):
+
+        # Facilitation due to post spikes from (last spike pre - delay) to (current spike pre - delay)
+        mask        = np.where(np.logical_and(times_spikes_post>(last_spk_pre-delay),times_spikes_post<=(spk_time_pre-delay)))
+        spikes_post = times_spikes_post[mask]
+        
+        for oo,spk_time_post in enumerate(spikes_post):
+            o1          = o1*np.exp(-(spk_time_post-last_spk_post)/tau_minus) + 1
+            o2          = o2*np.exp(-(spk_time_post-last_spk_post)/tau_y)
+            r1_at_post  = r1*np.exp(-((spk_time_post+delay)-last_spk_pre)/tau_plus)
+            weight      = np.clip(weight + r1_at_post*(A2_plus+A3_plus*o2),a_min=WminE,a_max=WmaxE)
+
+            last_spk_post = spk_time_post*1        
+            o2 += 1
+            
+            weight_offline[spk_time_post] = weight*1
+            
+        # Depression due to pre spike
+        r1            = r1*np.exp(-(spk_time_pre-last_spk_pre)/tau_plus) + 1
+        r2            = r2*np.exp(-(spk_time_pre-last_spk_pre)/tau_x)
+            
+        o1_at_pre_spk = o1*np.exp(-((spk_time_pre-delay)-last_spk_post)/tau_minus)-1*(last_spk_post==(spk_time_pre-delay))
+
+        weight        = np.clip(weight - o1_at_pre_spk*(A2_minus+A3_minus*r2),a_min=WminE,a_max=WmaxE)
+
+        last_spk_pre = spk_time_pre*1
+        r2 += 1
+
+        weight_offline[spk_time_pre] = weight*1
+        
+    return weight_offline
     
 # 
 def generate_spk_train(cv,rate,n_neurons,n_spikes):
@@ -57,3 +109,5 @@ def generate_spk_train(cv,rate,n_neurons,n_spikes):
     spk_times = np.floor(np.cumsum(intervals,axis=1)*10000)/10.                             # spike times in ms
     
     return spk_times
+    
+

@@ -6,11 +6,10 @@ MODE="plastic"
 
 for i in {0..2}
 do
+   STIM_IDX=$i
    for j in {0..4}
    do
-
-    MASTER_SEED=$j
-    STIM_IDX=$i
+    MASTER_SEED=$(expr 5 \* $i + $j)
     
     source /home/jgallina/nest_custom_env/bin/activate
 

@@ -3,7 +3,7 @@
 SCRIPTS="$(pwd)/scripts/"
 WHERE="local"
 MODE="static"
-MASTER_SEED=0
+MASTER_SEED=15
 STIM_IDX=3
 
 # Runs simulation
