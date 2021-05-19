@@ -123,6 +123,7 @@ rec_spk_from    = 10                # Number of excitatory neurons to record spi
 rec_weight_from = 5                 # Number of pairs to record weight from
 save_for        = 50000.            # Period for saving spike data from all neurons (ms)
 
+labels = ['grow','stim','post','decay']
 
 # Single neuron simulation
 mu_range      = (1.,20.,.1)                                 # Minimum mu, maximum mu, mu step
@@ -146,3 +147,24 @@ readout_binsize  = 10.
 readout_bins     = np.arange(0,readout_sim_time+readout_binsize,readout_binsize)
 CV_all           = np.arange(.4,1.5,0.1)
 
+# Weight decay analysis
+shift_all = np.array([0,3000,4000,5000])
+binsize_cc = 10.
+cv_interval = 50000.
+rate_interval = 50000.
+min_t_decay = 3000000.
+max_t_decay = 4000000.
+WmaxE_shift = 20.
+WminE_shift = 0.
+
+triplets_shift = {'tau_minus' : tau_minus,
+                  'tau_plus'  : tau_plus,
+                  'tau_x'     : tau_x,
+                  'tau_y'     : tau_y,
+                  'A2_plus'   : A2_plus,
+                  'A3_plus'   : A3_plus,
+                  'A2_minus'  : A2_minus,
+                  'A3_minus'  : A3_minus,
+                  'delay'     : delay,
+                  'WmaxE'     : WmaxE_shift,
+                  'WminE'     : WminE_shift}

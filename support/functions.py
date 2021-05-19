@@ -57,7 +57,7 @@ def cc(times_spikes_pre,times_spikes_post,binsize):
     cc = np.corrcoef(spk_train_source,spk_train_target)[0,1]
     return cc
     
-def calculate_weight_triplets(times_spikes_pre,times_spikes_post):
+def calculate_weight_triplets(times_spikes_pre,times_spikes_post,triplets):
     r1 = 0
     r2 = 0
     o1 = 0
@@ -66,39 +66,51 @@ def calculate_weight_triplets(times_spikes_pre,times_spikes_post):
     last_spk_pre = 0
     last_spk_post = 0
 
+    #weight_offline = np.zeros(len(times_spikes_pre)+len(times_spikes_post))
+    #time_offline   = np.zeros(len(times_spikes_pre)+len(times_spikes_post))
     weight_offline = {}
-
-    weight = WmaxE
+    
+    #ii = 0
+    weight = triplets['WmaxE']*1
     for ee,spk_time_pre in enumerate(times_spikes_pre):
 
         # Facilitation due to post spikes from (last spike pre - delay) to (current spike pre - delay)
-        mask        = np.where(np.logical_and(times_spikes_post>(last_spk_pre-delay),times_spikes_post<=(spk_time_pre-delay)))
+        mask = np.where(np.logical_and(times_spikes_post>(last_spk_pre-triplets['delay']),times_spikes_post<=(spk_time_pre-triplets['delay'])))
         spikes_post = times_spikes_post[mask]
         
         for oo,spk_time_post in enumerate(spikes_post):
-            o1          = o1*np.exp(-(spk_time_post-last_spk_post)/tau_minus) + 1
-            o2          = o2*np.exp(-(spk_time_post-last_spk_post)/tau_y)
-            r1_at_post  = r1*np.exp(-((spk_time_post+delay)-last_spk_pre)/tau_plus)
-            weight      = np.clip(weight + r1_at_post*(A2_plus+A3_plus*o2),a_min=WminE,a_max=WmaxE)
+            o1          = o1*np.exp(-(spk_time_post-last_spk_post)/triplets['tau_minus']) + 1
+            o2          = o2*np.exp(-(spk_time_post-last_spk_post)/triplets['tau_y'])
+            r1_at_post  = r1*np.exp(-((spk_time_post+triplets['delay'])-last_spk_pre)/triplets['tau_plus'])
+            weight = np.clip(weight + r1_at_post*(triplets['A2_plus']+triplets['A3_plus']*o2),a_min=triplets['WminE'],a_max=triplets['WmaxE'])
 
             last_spk_post = spk_time_post*1        
             o2 += 1
             
             weight_offline[spk_time_post] = weight*1
+            #weight_offline[ii] = weight*1
+            #time_offline[ii] = spk_time_post
+            
+            #ii += 1
             
         # Depression due to pre spike
-        r1            = r1*np.exp(-(spk_time_pre-last_spk_pre)/tau_plus) + 1
-        r2            = r2*np.exp(-(spk_time_pre-last_spk_pre)/tau_x)
+        r1            = r1*np.exp(-(spk_time_pre-last_spk_pre)/triplets['tau_plus']) + 1
+        r2            = r2*np.exp(-(spk_time_pre-last_spk_pre)/triplets['tau_x'])
             
-        o1_at_pre_spk = o1*np.exp(-((spk_time_pre-delay)-last_spk_post)/tau_minus)-1*(last_spk_post==(spk_time_pre-delay))
+        o1_at_pre_spk = o1*np.exp(-((spk_time_pre-triplets['delay'])-last_spk_post)/triplets['tau_minus'])-1*(last_spk_post==(spk_time_pre-triplets['delay']))
 
-        weight        = np.clip(weight - o1_at_pre_spk*(A2_minus+A3_minus*r2),a_min=WminE,a_max=WmaxE)
+        weight = np.clip(weight - o1_at_pre_spk*(triplets['A2_minus']+triplets['A3_minus']*r2),a_min=triplets['WminE'],a_max=triplets['WmaxE'])
 
         last_spk_pre = spk_time_pre*1
         r2 += 1
 
         weight_offline[spk_time_pre] = weight*1
+        #weight_offline[ii] = weight*1
+        #time_offline[ii] = spk_time_pre
         
+        #ii += 1
+        
+    #return weight_offline,time_offline
     return weight_offline
     
 # 
@@ -110,4 +122,5 @@ def generate_spk_train(cv,rate,n_neurons,n_spikes):
     
     return spk_times
     
+
 

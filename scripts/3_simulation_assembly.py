@@ -257,21 +257,21 @@ group = group.require_group('steps')
 nest.SetStatus(spk_all_neuron,{'start':par.warmup_time-par.save_for,'stop':par.warmup_time+par.stimulation_time})
 
 global_time = 0.
-global_time = simulation_cycle(group,global_time,par.warmup_time,'grow')
+global_time = simulation_cycle(group,global_time,par.warmup_time,par.labels[0])
 
 if mode=='static':
     connections = nest.GetConnections(neurons_E[:par.assembly_size],neurons_E[:par.assembly_size])
     nest.SetStatus(connections,'weight',par.WmaxE[stim_idx]*par.J_E)
 else:           # mode=='plastic' or mode=='speedup'
     nest.SetStatus([external_input[0]],'rate',par.stim_strength*par.p_rate)
-global_time = simulation_cycle(group,global_time,par.stimulation_time,'stim')
+global_time = simulation_cycle(group,global_time,par.stimulation_time,par.labels[1])
 
 stop_time = par.warmup_time+par.stimulation_time+par.post_stimulation_time
 nest.SetStatus(spk_all_neuron,{'start':stop_time-par.save_for,'stop':stop_time})
 
 nest.SetStatus([external_input[0]],'rate',par.p_rate)
-global_time = simulation_cycle(group,global_time,par.post_stimulation_time,'post')
+global_time = simulation_cycle(group,global_time,par.post_stimulation_time,par.labels[2])
 
-simulation_cycle(group,global_time,par.decay_time[speed],'decay')
+simulation_cycle(group,global_time,par.decay_time[speed],par.labels[3])
 
 data.close()

@@ -1,11 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+import h5py as h5
 
 matplotlib.rcParams.update({'font.size': 7})
 
-j_all  = np.array(['1.5','3','5'])
-seeds  = np.array([[500,600,700,800,900],[1000,1100,1200,1300,1400],[0,100,200,300,400]])
+
+data_file = h5.File("../data_assembly.hdf5","r")
+data = data_file['plastic']
+
+
+#j_all  = np.array(['1.5','3.0','5.0'])
+j_all = list(data.keys())
+#seeds  = np.array([[500,600,700,800,900],[1000,1100,1200,1300,1400],[0,100,200,300,400]])
 colors = np.array([[77,175,74],[152,78,163],[255,127,0]])/255.
 
 
@@ -31,51 +38,60 @@ cv_shift = np.array([])
 cc_shift = np.array([])
 slope_shift = np.array([])
 for jj,J in enumerate(j_all):
-    direc_single = '../data/assembly/plastic/J'+J+'/'+str(seeds[jj][0])+'/'
+    #direc_single = '../data/assembly/plastic/J'+J+'/'+str(seeds[jj][0])+'/'
     direc_all    = '../data/assembly/plastic/J'+J+'/'
+    seeds = list(data[J].keys())
+    
     times = np.array([])
     senders = np.array([])
     targets = np.array([])
     weights = np.array([])
-    for label in ['_post','_decay']:
-        events  = np.load(direc_single+"weight_E"+label+".npy",allow_pickle=True)
-        events  = events[()]
-        times   = np.concatenate((times,events['times']))
-        senders = np.concatenate((senders,events['senders']))
-        targets = np.concatenate((targets,events['targets']))
-        weights = np.concatenate((weights,events['weights']))
+    for label in ['post','decay']:
+        group = data[J+'/'+seeds[0]+'/steps/'+label+'/weight_E']
+        #events  = np.load(direc_single+"weight_E"+label+".npy",allow_pickle=True)
+        #events  = events[()]
+        times   = np.concatenate((times,group['times'])) #np.concatenate((times,events['times']))
+        senders = np.concatenate((senders,group['senders']))#np.concatenate((senders,events['senders']))
+        targets = np.concatenate((targets,group['targets']))#np.concatenate((targets,events['targets']))
+        weights = np.concatenate((weights,group['weights']))#np.concatenate((weights,events['weights']))
 
-    all_sources = np.load(direc_single+'sources.npy')
-    all_targets = np.load(direc_single+'targets.npy')
+    #all_sources = np.load(direc_single+'sources.npy')
+    #all_targets = np.load(direc_single+'targets.npy')
+    all_sources = data[J+'/'+seeds[0]+'/sources']
+    all_targets = data[J+'/'+seeds[0]+'/targets']
     
     for ii in np.arange(5):
         t_plot = times[(senders==all_sources[ii])&(targets==all_targets[ii])]
         w_plot = weights[(senders==all_sources[ii])&(targets==all_targets[ii])]
         ax2.plot(t_plot/1000.,w_plot,color=colors[jj])
     
-    data  = np.load(direc_all+"data_triplets_"+J+".npy")
-    cv    = np.mean(data[:,:,2:4],axis=2)
-    ax3.plot(cv[:,0],data[:,0,5],'x',color=colors[jj])
-    ax4.plot(data[:,0,4],data[:,0,5],'x',color=colors[jj])
+    data_triplets  = np.load(direc_all+"data_triplets_"+J+".npy")
+    cv    = np.mean(data_triplets[:,:,2:4],axis=2)
+    ax3.plot(cv[:,0],data_triplets[:,0,5],'x',color=colors[jj])
+    ax4.plot(data_triplets[:,0,4],data_triplets[:,0,5],'x',color=colors[jj])
     
     cv_no_shift = np.concatenate((cv_no_shift,cv[:,0]))
-    slope_no_shift = np.concatenate((slope_no_shift,data[:,0,5]))
-    cc_no_shift    = np.concatenate((cc_no_shift,data[:,0,4]))
+    slope_no_shift = np.concatenate((slope_no_shift,data_triplets[:,0,5]))
+    cc_no_shift    = np.concatenate((cc_no_shift,data_triplets[:,0,4]))
     
     weight_offline_all = np.load(direc_all+"weight_offline_"+J+".npy",allow_pickle=True)
+    #time_offline_all = np.load(direc_all+"time_offline_"+J+".npy",allow_pickle=True)
     weight_offline_all = weight_offline_all[()]
+    #time_offline_all = time_offline_all[()]
     
-    for ii in np.arange(data.shape[0]):
+    for ii in np.arange(data_triplets.shape[0]):
         weight_offline = weight_offline_all[ii]
+        #time_offline = time_offline_all[ii]
         ax6.plot(np.array(list(weight_offline.keys()))/1000.,list(weight_offline.values()),color=colors[jj],alpha=0.5)
+        #ax6.plot(time_offline/1000.,weight_offline,color=colors[jj],alpha=0.5)
     
     cv_all_shift    = np.array([])
     slope_all_shift = np.array([])
     cc_all_shift    = np.array([])
-    for ss in np.arange(1,data.shape[1],1):
+    for ss in np.arange(1,data_triplets.shape[1],1):
         cv_all_shift = np.concatenate((cv_all_shift,cv[:,ss]))
-        slope_all_shift = np.concatenate((slope_all_shift,data[:,ss,5]))
-        cc_all_shift = np.concatenate((cc_all_shift,data[:,ss,4]))
+        slope_all_shift = np.concatenate((slope_all_shift,data_triplets[:,ss,5]))
+        cc_all_shift = np.concatenate((cc_all_shift,data_triplets[:,ss,4]))
     
     ax7.plot(cv_all_shift,slope_all_shift,'.',color=colors[jj],alpha=0.5)
     ax8.plot(cc_all_shift,slope_all_shift,'.',color=colors[jj],alpha=0.5)
