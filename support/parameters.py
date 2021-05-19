@@ -23,7 +23,7 @@ path_to_data['brain1'] = '/home/jgallina/homedir/iSTDP/data/'
 # Simulation
 n_threads  = {}
 n_threads['local']   = 2
-n_threads['brain5'] = 16
+n_threads['brain5'] = 32
 print_time = True
 
 
@@ -50,7 +50,7 @@ J_ext    = 0.05*PSC_over_PSP            # Syaptic strength of external input (mV
 J_E      = 0.15*PSC_over_PSP            # Excitatory synaptic strength (mV PSP max amplitude)
 J_I      = -IE_ratio * J_E              # Inhibitory synpatic strength (mV PSP max amplitude)
 
-WmaxE    = [1.5,3.,5.,6.]                       # Maximum weight for excitatory plasticity
+WmaxE    = [1.5,3.,5.,5.5,6.]                       # Maximum weight for excitatory plasticity
 WminE    = J_E                          # Minimum weight for excitatory plasticity
 
 

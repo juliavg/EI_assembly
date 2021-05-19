@@ -4,7 +4,7 @@ SCRIPTS="$(pwd)/scripts/"
 WHERE="brain5"
 MODE="plastic"
 
-for i in {0..2}
+for i in {0..3}
 do
    STIM_IDX=$i
    for j in {0..4}
