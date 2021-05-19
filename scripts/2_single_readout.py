@@ -6,7 +6,7 @@ from scipy.integrate import quad as INT
 from importlib import reload 
 import sys
 
-direc = sys.argv[0].split('scripts')[0]+'/'
+direc = sys.argv[0].split('scripts')[0]
 where = sys.argv[1]
 synapse_type = sys.argv[2]
 
@@ -22,7 +22,7 @@ sys.path.insert(2,par.path_to_nest[where])
 import nest
 
 # Create data file
-data      = h5.File(direc+'data_single_readout.hdf5','a')
+data      = h5.File(par.path_to_data[where]+'data_single_readout.hdf5','a')
 data_mode = data.require_group(synapse_type)
 
 # Initialize arrays

@@ -1,17 +1,29 @@
 import numpy as np
 
 # Paths
-path_to_nest            = {}
+path_to_nest           = {}
 path_to_nest['local']  = '/home/julia/Documents/NEST/nest-2.20.0_custom/lib/python3.8/site-packages'
 path_to_nest['brain9'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.0_custom/lib/python3.8/site-packages'
 path_to_nest['brain5'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.0_custom/lib/python3.6/site-packages'
 path_to_nest['brain1'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.1_custom/lib/python3.6/site-packages'
 
+path_to_figure           = {}
+path_to_figure['local']  = '/home/julia/Documents/iSTDP/paper/main/figures/'
+path_to_figure['brain9'] = '/home/jgallina/homedir/iSTDP/figures/'
+path_to_figure['brain5'] = '/home/jgallina/homedir/iSTDP/figures/'
+path_to_figure['brain1'] = '/home/jgallina/homedir/iSTDP/figures/'
+
+path_to_data           = {}
+path_to_data['local']  = '/home/julia/Documents/iSTDP/paper/main/data/'
+path_to_data['brain9'] = '/home/jgallina/homedir/iSTDP/data/'
+path_to_data['brain5'] = '/home/jgallina/homedir/iSTDP/data/'
+path_to_data['brain1'] = '/home/jgallina/homedir/iSTDP/data/'
+
 
 # Simulation
 n_threads  = {}
-n_threads['local']   = 3
-n_threads['brain5'] = 15
+n_threads['local']   = 2
+n_threads['brain5'] = 16
 print_time = True
 
 
