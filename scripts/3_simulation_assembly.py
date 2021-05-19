@@ -3,7 +3,7 @@ from importlib import reload
 import h5py as h5
 import sys
 
-direc = sys.argv[0].split('scripts')[0]+'/'
+direc = sys.argv[0].split('scripts')[0]
 where = sys.argv[1]
 mode  = sys.argv[2]
 master_seed = int(sys.argv[3])*100
@@ -19,9 +19,10 @@ import functions as f
 sys.path.insert(1,par.path_to_nest[where])
 import nest
 
-data  = h5.File(direc+'data_assembly.hdf5','a')
+data  = h5.File(par.path_to_data[where]+'data_assembly.hdf5','a')
 group = data.require_group(mode)
 group = group.require_group(str(par.WmaxE[stim_idx]))
+group = group.require_group('seeds')
 group = group.require_group(str(master_seed))
 
 
@@ -269,7 +270,7 @@ global_time = simulation_cycle(group,global_time,par.stimulation_time,par.labels
 stop_time = par.warmup_time+par.stimulation_time+par.post_stimulation_time
 nest.SetStatus(spk_all_neuron,{'start':stop_time-par.save_for,'stop':stop_time})
 
-nest.SetStatus([external_input[0]],'rate',par.p_rate)
+nest.SetStatus([external_input[0]],'rate',par.p_rate)       # independent of mode because going back to default value
 global_time = simulation_cycle(group,global_time,par.post_stimulation_time,par.labels[2])
 
 simulation_cycle(group,global_time,par.decay_time[speed],par.labels[3])
