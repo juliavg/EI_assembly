@@ -70,8 +70,8 @@ def calculate_weight_triplets(times_spikes_pre,times_spikes_post,triplets):
     #time_offline   = np.zeros(len(times_spikes_pre)+len(times_spikes_post))
     weight_offline = {}
     
-    #ii = 0
-    weight = triplets['WmaxE']*1
+    ii = 0
+    weight = triplets['weight']*1
     for ee,spk_time_pre in enumerate(times_spikes_pre):
 
         # Facilitation due to post spikes from (last spike pre - delay) to (current spike pre - delay)
@@ -91,7 +91,7 @@ def calculate_weight_triplets(times_spikes_pre,times_spikes_post,triplets):
             #weight_offline[ii] = weight*1
             #time_offline[ii] = spk_time_post
             
-            #ii += 1
+            ii += 1
             
         # Depression due to pre spike
         r1            = r1*np.exp(-(spk_time_pre-last_spk_pre)/triplets['tau_plus']) + 1
@@ -108,10 +108,10 @@ def calculate_weight_triplets(times_spikes_pre,times_spikes_post,triplets):
         #weight_offline[ii] = weight*1
         #time_offline[ii] = spk_time_pre
         
-        #ii += 1
+        ii += 1
         
     #return weight_offline,time_offline
-    return weight_offline
+    return np.array(list(weight_offline.values())),np.array(list(weight_offline.keys()))
     
 # 
 def generate_spk_train(cv,rate,n_neurons,n_spikes):

@@ -2,27 +2,32 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 import h5py as h5
+import sys
+
+direc = sys.argv[0].split('scripts')[0]
+where = sys.argv[1]
+
+sys.path.append(direc+'support')
+import parameters
+reload(parameters)
+import parameters as par
+import functions
+reload(functions)
+import functions as f
 
 matplotlib.rcParams.update({'font.size': 7})
 
+data_file = h5.File(par.path_to_data[where]+"data_assembly.hdf5","r")
+data      = data_file['plastic']
+j_all     = list(data.keys())
 
-data_file = h5.File("../data_assembly.hdf5","r")
-data = data_file['plastic']
-
-
-#j_all  = np.array(['1.5','3.0','5.0'])
-j_all = list(data.keys())
-#seeds  = np.array([[500,600,700,800,900],[1000,1100,1200,1300,1400],[0,100,200,300,400]])
 colors = np.array([[77,175,74],[152,78,163],[255,127,0]])/255.
-
 
 def spines(ax):
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
 
 fig = plt.figure(figsize=(7,3))
-
-
 ax2 = fig.add_axes([0.325,0.65,0.125,0.3])
 ax3 = fig.add_axes([0.55,0.65,0.125,0.3])
 ax4 = fig.add_axes([0.775,0.65,0.125,0.3])
@@ -31,81 +36,68 @@ ax7 = fig.add_axes([0.55,0.15,0.125,0.3])
 ax8 = fig.add_axes([0.775,0.15,0.125,0.3])
 
 
-cv_no_shift = np.array([])
-cc_no_shift = np.array([])
-slope_no_shift = np.array([])
-cv_shift = np.array([])
-cc_shift = np.array([])
-slope_shift = np.array([])
+cv_original = np.array([])
+cc_original = np.array([])
+slope_original = np.array([])
+cv_shifted = np.array([])
+cc_shifted = np.array([])
+slope_shifted = np.array([])
 for jj,J in enumerate(j_all):
-    #direc_single = '../data/assembly/plastic/J'+J+'/'+str(seeds[jj][0])+'/'
-    direc_all    = '../data/assembly/plastic/J'+J+'/'
-    seeds = list(data[J].keys())
+    data_J = data[J+'/seeds']
+    seeds   = list(data[J].keys())
     
     times = np.array([])
     senders = np.array([])
     targets = np.array([])
     weights = np.array([])
     for label in ['post','decay']:
-        group = data[J+'/'+seeds[0]+'/steps/'+label+'/weight_E']
-        #events  = np.load(direc_single+"weight_E"+label+".npy",allow_pickle=True)
-        #events  = events[()]
-        times   = np.concatenate((times,group['times'])) #np.concatenate((times,events['times']))
-        senders = np.concatenate((senders,group['senders']))#np.concatenate((senders,events['senders']))
-        targets = np.concatenate((targets,group['targets']))#np.concatenate((targets,events['targets']))
-        weights = np.concatenate((weights,group['weights']))#np.concatenate((weights,events['weights']))
+        group   = data_J[seeds[0]+'/steps/'+label+'/weight_E']
+        times   = np.concatenate((times,group['times']))
+        senders = np.concatenate((senders,group['senders']))
+        targets = np.concatenate((targets,group['targets']))
+        weights = np.concatenate((weights,group['weights']))
 
-    #all_sources = np.load(direc_single+'sources.npy')
-    #all_targets = np.load(direc_single+'targets.npy')
-    all_sources = data[J+'/'+seeds[0]+'/sources']
-    all_targets = data[J+'/'+seeds[0]+'/targets']
+    all_sources = data_J[seeds[0]+'/sources']
+    all_targets = data_J[seeds[0]+'/targets']
     
     for ii in np.arange(5):
         t_plot = times[(senders==all_sources[ii])&(targets==all_targets[ii])]
         w_plot = weights[(senders==all_sources[ii])&(targets==all_targets[ii])]
         ax2.plot(t_plot/1000.,w_plot,color=colors[jj])
     
-    data_triplets  = np.load(direc_all+"data_triplets_"+J+".npy")
-    cv    = np.mean(data_triplets[:,:,2:4],axis=2)
-    ax3.plot(cv[:,0],data_triplets[:,0,5],'x',color=colors[jj])
-    ax4.plot(data_triplets[:,0,4],data_triplets[:,0,5],'x',color=colors[jj])
+    cv    = data_J['weight_decay/original/cv']
+    slope = data_J['weight_decay/original/slope']
+    cc    = data_J['weight_decay/original/cc']
+    ax3.plot(cv,slope,'x',color=colors[jj])
+    ax4.plot(cc,slope,'x',color=colors[jj])
     
-    cv_no_shift = np.concatenate((cv_no_shift,cv[:,0]))
-    slope_no_shift = np.concatenate((slope_no_shift,data_triplets[:,0,5]))
-    cc_no_shift    = np.concatenate((cc_no_shift,data_triplets[:,0,4]))
+    cv_original    = np.concatenate((cv_original,cv))
+    slope_original = np.concatenate((slope_original,slope))
+    cc_original    = np.concatenate((cc_original,cc))
     
-    weight_offline_all = np.load(direc_all+"weight_offline_"+J+".npy",allow_pickle=True)
-    #time_offline_all = np.load(direc_all+"time_offline_"+J+".npy",allow_pickle=True)
-    weight_offline_all = weight_offline_all[()]
-    #time_offline_all = time_offline_all[()]
+    data_offline = data_J['weight_decay/shifted/offline_weight']
+    for ii in list(data_offline.keys()):
+        times = data_offline[ii+'/times']
+        weights = data_offline[ii+'/weights']
+        ax6.plot(times,weights,color=colors[jj],alpha=0.5)
     
-    for ii in np.arange(data_triplets.shape[0]):
-        weight_offline = weight_offline_all[ii]
-        #time_offline = time_offline_all[ii]
-        ax6.plot(np.array(list(weight_offline.keys()))/1000.,list(weight_offline.values()),color=colors[jj],alpha=0.5)
-        #ax6.plot(time_offline/1000.,weight_offline,color=colors[jj],alpha=0.5)
+    cv    = data_J['weight_decay/shifted/cv']
+    slope = data_J['weight_decay/shifted/slope']
+    cc    = data_J['weight_decay/shifted/cc']
     
-    cv_all_shift    = np.array([])
-    slope_all_shift = np.array([])
-    cc_all_shift    = np.array([])
-    for ss in np.arange(1,data_triplets.shape[1],1):
-        cv_all_shift = np.concatenate((cv_all_shift,cv[:,ss]))
-        slope_all_shift = np.concatenate((slope_all_shift,data_triplets[:,ss,5]))
-        cc_all_shift = np.concatenate((cc_all_shift,data_triplets[:,ss,4]))
+    ax7.plot(cv,slope,'.',color=colors[jj],alpha=0.5)
+    ax8.plot(cc,slope,'.',color=colors[jj],alpha=0.5)
     
-    ax7.plot(cv_all_shift,slope_all_shift,'.',color=colors[jj],alpha=0.5)
-    ax8.plot(cc_all_shift,slope_all_shift,'.',color=colors[jj],alpha=0.5)
-    
-    cv_shift = np.concatenate((cv_shift,cv_all_shift))
-    slope_shift = np.concatenate((slope_shift,slope_all_shift))
-    cc_shift = np.concatenate((cc_shift,cc_all_shift))
+    cv_shifted    = np.concatenate((cv_shifted,cv))
+    slope_shifted = np.concatenate((slope_shifted,slope))
+    cc_shifted    = np.concatenate((cc_shifted,cc))
     
 
 
-ax3.text(0.8,-6.5e-6,'r = %.2f' %np.corrcoef(cv_no_shift,slope_no_shift)[0,1])
-ax4.text(0.04,-6.e-6,'r = %.2f' %np.corrcoef(cc_no_shift,slope_no_shift)[0,1])
-ax7.text(0.8,-7.e-6,'r = %.2f' %np.corrcoef(cv_shift,slope_shift)[0,1])
-ax8.text(0.0055,-7.e-6,'r = %.2f' %np.corrcoef(cc_shift,slope_shift)[0,1])
+ax3.text(0.8,-6.5e-6,'r = %.2f' %np.corrcoef(cv_original,slope_original)[0,1])
+ax4.text(0.04,-6.e-6,'r = %.2f' %np.corrcoef(cc_original,slope_original)[0,1])
+ax7.text(0.8,-7.e-6,'r = %.2f' %np.corrcoef(cv_shifted,slope_shifted)[0,1])
+ax8.text(0.0055,-7.e-6,'r = %.2f' %np.corrcoef(cc_shifted,slope_shifted)[0,1])
 
 ax2.set_xlabel("Time [s]")
 ax2.set_ylabel(r"$W_{E \to E}$ [pA]")
@@ -134,6 +126,4 @@ slope_subplot(ax8)
 fig.text(0.05,0.95,'Original spike trains')
 fig.text(0.05,0.45,'Shifted spike trains')
 
-plt.savefig('../figures/figure_decay.pdf')
-
-plt.show()
+plt.savefig(par.path_to_figure[where]+'figure_decay.svg')

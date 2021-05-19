@@ -179,4 +179,5 @@ triplets_shift = {'tau_minus' : tau_minus,
                   'A3_minus'  : A3_minus,
                   'delay'     : delay,
                   'WmaxE'     : WmaxE_shift,
-                  'WminE'     : WminE_shift}
+                  'WminE'     : WminE_shift,
+                  'weight'    : WmaxE_shift}
