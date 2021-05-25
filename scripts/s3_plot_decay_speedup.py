@@ -9,6 +9,7 @@ reload(parameters)
 import parameters as par
 
 direc = sys.argv[0].split('scripts')[0]
+where = sys.argv[1]
 
 matplotlib.rcParams.update({'font.size': 7})
 
@@ -35,14 +36,14 @@ fig = plt.figure(figsize=(7,3))
 
 ax = fig.add_axes([0.15,0.15,0.8,0.8])
 
-data = h5.File("data_assembly.hdf5",'r')
+data = h5.File(par.path_to_data[where]+"data_assembly.hdf5",'r')
 data_mode = data['speedup']
 j_all = list(data_mode.keys())
 
 for jj,J in enumerate(j_all):
     #direc   = '../data/assembly/plastic/J'+J+'/speed_up/'+str(seeds_all['speedup']['J'+J][0])+'/'
-    seed  = list(data_mode[J].keys())
-    group = data_mode[J+'/'+seed]
+    seed  = list(data_mode[J+'/seeds/'].keys())[0]
+    group = data_mode[J+'/seeds/'+seed]
     
     senders_all = np.array(group['sources'])#np.load(direc+"sources.npy")
     targets_all = np.array(group['targets'])#np.load(direc+"targets.npy")
@@ -72,6 +73,4 @@ for jj,J in enumerate(j_all):
 ax.set_xlabel("Time [s]")
 ax.set_ylabel(r"$W_{E \to E}$ [pA]")
 
-plt.savefig(direc+'figure_decay_speedup.pdf')
-
-plt.show()
+plt.savefig(par.path_to_figure[where]+'figure_decay_speedup.pdf')
