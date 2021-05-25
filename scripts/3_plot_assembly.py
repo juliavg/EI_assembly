@@ -246,4 +246,4 @@ ax8.set_xticklabels(['Before','After'])
 
 fig.set_size_inches(7,3.5)
 
-plt.savefig(par.path_to_figure[where]+"figure_assembly_"+mode+".pdf",dpi=300)
+plt.savefig(par.path_to_figure[where]+"figure_assembly_"+mode+"_"+str(stim_idx)+".pdf",dpi=300)
