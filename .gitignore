@@ -3,6 +3,7 @@
 data/
 
 # Ignore figures
+figures/
 *.svg
 *.pdf
 

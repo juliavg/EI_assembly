@@ -4,7 +4,7 @@ SCRIPTS="$(pwd)/scripts/"
 WHERE="brain5"
 MODE="plastic"
 
-for i in {0..3}
+for i in {0..2}
 do
    STIM_IDX=$i
    for j in {0..4}
@@ -21,4 +21,4 @@ do
 done
 
 # Plots
-python3 ${SCRIPTS}3_plot_assembly.py $MODE $STIM_IDX
+python3 ${SCRIPTS}3_plot_assembly.py $WHERE $MODE $STIM_IDX

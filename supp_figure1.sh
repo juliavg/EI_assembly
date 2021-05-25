@@ -10,4 +10,4 @@ STIM_IDX=4
 python3 ${SCRIPTS}3_simulation_assembly.py $WHERE $MODE $MASTER_SEED $STIM_IDX
 
 # Plots
-python3 ${SCRIPTS}3_plot_assembly.py $MODE $STIM_IDX
+python3 ${SCRIPTS}3_plot_assembly.py $WHERE $MODE $STIM_IDX

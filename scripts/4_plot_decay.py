@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 import h5py as h5
+from importlib import reload
 import sys
 
 direc = sys.argv[0].split('scripts')[0]
@@ -19,9 +20,9 @@ matplotlib.rcParams.update({'font.size': 7})
 
 data_file = h5.File(par.path_to_data[where]+"data_assembly.hdf5","r")
 data      = data_file['plastic']
-j_all     = list(data.keys())
+j_all     = list(data.keys())[:3]
 
-colors = np.array([[77,175,74],[152,78,163],[255,127,0]])/255.
+colors = np.array([[77,175,74],[152,78,163],[255,127,0],[228,26,28]])/255.
 
 def spines(ax):
     ax.spines['right'].set_visible(False)
@@ -43,22 +44,22 @@ cv_shifted = np.array([])
 cc_shifted = np.array([])
 slope_shifted = np.array([])
 for jj,J in enumerate(j_all):
-    data_J = data[J+'/seeds']
-    seeds   = list(data[J].keys())
+    data_J = data[J]
+    seeds   = list(data_J['seeds'].keys())
     
     times = np.array([])
     senders = np.array([])
     targets = np.array([])
     weights = np.array([])
     for label in ['post','decay']:
-        group   = data_J[seeds[0]+'/steps/'+label+'/weight_E']
+        group   = data_J['seeds/'+seeds[0]+'/steps/'+label+'/weight_E']
         times   = np.concatenate((times,group['times']))
         senders = np.concatenate((senders,group['senders']))
         targets = np.concatenate((targets,group['targets']))
         weights = np.concatenate((weights,group['weights']))
 
-    all_sources = data_J[seeds[0]+'/sources']
-    all_targets = data_J[seeds[0]+'/targets']
+    all_sources = data_J['seeds/'+seeds[0]+'/sources']
+    all_targets = data_J['seeds/'+seeds[0]+'/targets']
     
     for ii in np.arange(5):
         t_plot = times[(senders==all_sources[ii])&(targets==all_targets[ii])]
@@ -127,3 +128,5 @@ fig.text(0.05,0.95,'Original spike trains')
 fig.text(0.05,0.45,'Shifted spike trains')
 
 plt.savefig(par.path_to_figure[where]+'figure_decay.svg')
+
+data_file.close()

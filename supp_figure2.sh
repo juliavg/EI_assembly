@@ -1,19 +1,13 @@
 #!/bin/bash
 
 SCRIPTS="$(pwd)/scripts/"
-WHERE="brain5"
-MODE="speedup"
+WHERE="local"
+MODE="plastic"
+MASTER_SEED=16
+STIM_IDX=3
 
-for i in {0..2}
-do
-   STIM_IDX=$i
-   MASTER_SEED=$(expr 16 + $i)
-   
-   source /home/jgallina/nest_custom_env/bin/activate
-
-    # Runs simulation
-    python3 ${SCRIPTS}3_simulation_assembly.py $WHERE $MODE $MASTER_SEED $STIM_IDX
-done
+# Runs simulation
+#python3 ${SCRIPTS}3_simulation_assembly.py $WHERE $MODE $MASTER_SEED $STIM_IDX
 
 # Plots
-#python3 ${SCRIPTS}4_plot_decay_speedup.py $MODE
+python3 ${SCRIPTS}3_plot_assembly.py $WHERE $MODE $STIM_IDX
