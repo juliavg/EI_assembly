@@ -43,7 +43,7 @@ ax7  = fig.add_axes([0.72,0.15,0.125,0.3])
 # Panel B
 ii = 3                                                                      # Selects which stim_strengh to plot weight and rate from
 weight = np.array(data['simulation/'+str(par.stim_strength_all[ii])+'/mean_weight'])
-time   = par.single_bins[:-1]*1000.
+time   = par.single_bins[:-1]/1000.
 ax2.plot(time,weight,color='grey')
 ax2.set_xlabel("Time [s]")
 ax2.set_ylabel(r"$W_{I \to E}$ [pA]")
@@ -98,8 +98,8 @@ for ss,strength in enumerate(par.stim_strength_all):
     ax6.plot(mean_vm,std_vm,'x',color=colors_J[ss])
 
 cbar.set_label("Firing rate [Hz]")
-ax5.set_xlabel(r"$\mu$ [mV]")
-ax5.set_ylabel(r"$\sigma$ [mV]")
+ax5.set_xlabel(r"Subthres. mean, $\mu$ [mV]")
+ax5.set_ylabel(r"Subthres. std, $\sigma$ [mV]")
 
 # Panel F
 X,Y  = np.meshgrid(mu_values,std_values)
@@ -107,8 +107,8 @@ im   = ax6.pcolor(X,Y,CV_all.T,cmap='viridis',rasterized=True)
 cbar = fig.colorbar(im,cax=ax6b)
 CS   = ax6.contour(X,Y, CV_all.T,colors='k',linewidths=1)
 cbar.set_label("CV")
-ax6.set_xlabel(r"$\mu$ [mV]")
-ax6.set_ylabel(r"$\sigma$ [mV]")
+ax6.set_xlabel(r"Subthres. mean, $\mu$ [mV]")
+ax6.set_ylabel(r"Subthres. std, $\sigma$ [mV]")
 
 
 # Panel G
@@ -120,7 +120,7 @@ for ii in np.arange(rates_contour.shape[0]):
     label = rates_contour[ii]
     ax7.plot(np.array(CS_rates[str(label)][:,0]),np.array(CV_contours[str(label)]),color=scalarMap.to_rgba(rates_contour[ii]),label='%.f Hz' %label) 
 ax7.legend(loc=(1.1,0.2))                
-ax7.set_xlabel(r'$\mu$ (mV)')
+ax7.set_xlabel(r'Subthres. mean, $\mu$ [mV]')
 ax7.set_ylabel('CV')
 
 fig.text(0.03,0.96,'A')

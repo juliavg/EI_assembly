@@ -69,6 +69,7 @@ for jj,J in enumerate(list(data.keys())):
                 times_spikes_post -= reference_time
 
                 weight_offline,time_offline = f.calculate_weight_triplets(times_spikes_pre,times_spikes_post,par.triplets_shift)
+                
                 idx = np.argsort(time_offline)
                 weight_offline = weight_offline[idx]
                 time_offline = time_offline[idx]
@@ -91,8 +92,8 @@ for jj,J in enumerate(list(data.keys())):
     f.save_to_group(data_original,cv_all[:,0],'cv')
     f.save_to_group(data_original,cc_all[:,0],'cc')
     f.save_to_group(data_original,slope_all[:,0],'slope')
-    f.save_to_group(data_shifted,cv_all[:,1:].ravel(),'cv')
-    f.save_to_group(data_shifted,cc_all[:,1:].ravel(),'cc')
-    f.save_to_group(data_shifted,slope_all[:,1:].ravel(),'slope')
+    f.save_to_group(data_shifted,cv_all[:,1],'cv')
+    f.save_to_group(data_shifted,cc_all[:,1],'cc')
+    f.save_to_group(data_shifted,slope_all[:,1],'slope')
     
 data_file.close()

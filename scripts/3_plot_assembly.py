@@ -5,6 +5,7 @@ from importlib import reload
 import h5py as h5
 from matplotlib import colors
 import sys
+import matplotlib.patches as patches
 
 direc = sys.argv[0].split('scripts')[0]
 where = sys.argv[1]
@@ -23,18 +24,18 @@ data  = h5.File(par.path_to_data[where]+'data_assembly.hdf5','r')
 group = data[mode+'/'+str(par.WmaxE[stim_idx])+'/seeds']
 seeds = list(group.keys())
 
+def spines(ax):
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
 
-matplotlib.rcParams.update({'font.size': 7})
+fontsize = 7
+matplotlib.rcParams.update({'font.size': fontsize})
 
+color_ass = np.array([152,78,163])/255.
+color_exc = np.array([228,26,28])/255.
 
-color_ass = np.array([222,203,228])/255.
-color_exc = np.array([254,217,166])/255.
-
-color_ass = np.array([179,205,227])/255.
-color_exc = np.array([204,235,197])/255.
-
-cmap = 'viridis'
-cmap_w = 'seismic'
+cmap = 'OrRd'
+cmap_w = 'coolwarm'
 
 senders      = np.array([])
 times        = np.array([])
@@ -124,6 +125,9 @@ def create_mean_matrix(matrix_original):
             matrix_reduced[ii,jj] = np.mean(matrix_patch[np.nonzero(matrix_patch)])
     return matrix_reduced
 
+def plot_assembly_rectangle(ax):
+    rectangle = patches.Rectangle((0,0),10,16,edgecolor='k',facecolor='none',clip_on=False)
+    ax.add_patch(rectangle)
 
 
 sources = np.array(group_single['grow/connections/sources'])-3
@@ -152,16 +156,16 @@ ax2a = fig.add_axes([0.3,0.42,0.1,0.2])
 ax2b = fig.add_axes([0.3,0.12,0.1,0.2])  
 ax2c = fig.add_axes([0.41,0.12,0.01,0.5])  
 
-ax3a = fig.add_axes([0.54,0.42,0.1,0.2])
-ax3b = fig.add_axes([0.54,0.12,0.1,0.2])
-ax3c = fig.add_axes([0.65,0.12,0.01,0.5])
+ax3a = fig.add_axes([0.55,0.42,0.1,0.2])
+ax3b = fig.add_axes([0.55,0.12,0.1,0.2])
+ax3c = fig.add_axes([0.66,0.12,0.01,0.5])
 
-ax4a = fig.add_axes([0.75,0.42,0.16,0.2])
+ax4a = fig.add_axes([0.75,0.38,0.16,0.2])
 ax4b = fig.add_axes([0.75,0.12,0.16,0.2])
-ax4c = fig.add_axes([0.9,0.12,0.01,0.5])
+ax4c = fig.add_axes([0.9,0.12,0.01,0.46])
 
 ax6  = fig.add_axes([0.3,0.72,0.1,0.2])
-ax7  = fig.add_axes([0.54,0.72,0.1,0.2])
+ax7  = fig.add_axes([0.55,0.72,0.1,0.2])
 ax8  = fig.add_axes([0.77,0.72,0.1,0.2])
 
 ax9  = fig.add_axes([0.07,0.42,0.18,0.2])
@@ -172,16 +176,54 @@ ax2a.imshow(rate_matrix_before,vmin=min_rate,vmax=max_rate,cmap=cmap,rasterized=
 im   = ax2b.imshow(rate_matrix_post,vmin=min_rate,vmax=max_rate,cmap=cmap,rasterized=True)
 cbar = fig.colorbar(im,cax=ax2c)
 cbar.set_label("Firing Rate [Hz]")
+ax2a.set_xticks([])
+ax2a.set_yticks([])
+ax2b.set_xticks([])
+ax2b.set_yticks([])
+
+plot_assembly_rectangle(ax2a)
+plot_assembly_rectangle(ax2b)
 
 ax3a.imshow(cv_matrix_before,vmin=min_cv,vmax=max_cv,cmap=cmap,rasterized=True)
 im   = ax3b.imshow(cv_matrix_post,vmin=min_cv,vmax=max_cv,cmap=cmap,rasterized=True)
 cbar = fig.colorbar(im,cax=ax3c)
 cbar.set_label("CV")    
+ax3a.set_xticks([])
+ax3a.set_yticks([])
+ax3b.set_xticks([])
+ax3b.set_yticks([])
+
+plot_assembly_rectangle(ax3a)
+plot_assembly_rectangle(ax3b)
 
 ax4a.imshow(weight_before,vmin=min_w,vmax=max_w,cmap=cmap_w,norm=norm,rasterized=True)
+#ax4a.imshow(matrix_before,vmin=min_w,vmax=max_w,cmap=cmap_w,norm=norm,rasterized=True)
 im = ax4b.imshow(weight_after,vmin=min_w,vmax=max_w,cmap=cmap_w,norm=norm,rasterized=True)
+#im = ax4b.imshow(matrix_after,vmin=min_w,vmax=max_w,cmap=cmap_w,norm=norm,rasterized=True)
 cbar = fig.colorbar(im,cax=ax4c)
-cbar.set_label("Weight [pA]")
+cbar.set_label("Mean weight between groups [pA]")
+ax4a.set_xticks([])
+ax4a.set_yticks([])
+ax4a.set_xlabel("Pre group")
+ax4a.set_ylabel("Post group")
+ax4b.set_xticks([])
+ax4b.set_yticks([])
+ax4b.set_xlabel("Pre group")
+ax4b.set_ylabel("Post group")
+ax4a.set_title("Synaptic weights",fontsize=fontsize)
+
+
+n_groups = par.N_E/group_size
+rectangle = patches.Rectangle((-3,0),1,par.assembly_size/group_size,color=color_ass,clip_on=False)
+ax4b.add_patch(rectangle)
+rectangle = patches.Rectangle((0,n_groups+1),par.assembly_size/group_size,1,color=color_ass,clip_on=False)
+ax4b.add_patch(rectangle)
+
+n_groups = par.N_E/group_size
+rectangle = patches.Rectangle((-3,0),1,par.assembly_size/group_size,color=color_ass,clip_on=False)
+ax4a.add_patch(rectangle)
+rectangle = patches.Rectangle((0,n_groups+1),par.assembly_size/group_size,1,color=color_ass,clip_on=False)
+ax4a.add_patch(rectangle)
 
 a = par.assembly_size
 b = par.N_E
@@ -189,11 +231,13 @@ width=0.3
 
 ax6.bar(0-width/2,height=np.mean(rate_before[:a]),width=width,yerr=np.std(rate_before[:a]),color=color_ass)
 ax6.bar(0+width/2,height=np.mean(rate_before[a:b]),width=width,yerr=np.std(rate_before[a:b]),color=color_exc)
-ax6.bar(1-width/2,height=np.mean(rate_post[:a]),width=width,yerr=np.std(rate_post[:a]),color=color_ass)
-ax6.bar(1+width/2,height=np.mean(rate_post[a:b]),width=width,yerr=np.std(rate_post[a:b]),color=color_exc)
+ax6.bar(1-width/2,height=np.mean(rate_post[:a]),width=width,yerr=np.std(rate_post[:a]),color=color_ass,label='within assembly')
+ax6.bar(1+width/2,height=np.mean(rate_post[a:b]),width=width,yerr=np.std(rate_post[a:b]),color=color_exc,label='outside assembly')
+ax6.legend(bbox_to_anchor=(4., 1.4),ncol=2)
 ax6.set_ylabel("Firing rate [Hz]")
 ax6.set_xticks([0,1])
 ax6.set_xticklabels(['Before','After'])
+spines(ax6)
 
 ax7.bar(0-width/2,height=np.mean(cv_before[:a]),width=width,yerr=np.std(cv_before[:a]),color=color_ass)
 ax7.bar(0+width/2,height=np.mean(cv_before[a:b]),width=width,yerr=np.std(cv_before[a:b]),color=color_exc)
@@ -202,17 +246,36 @@ ax7.bar(1+width/2,height=np.mean(cv_post[a:b]),width=width,yerr=np.std(cv_post[a
 ax7.set_ylabel("CV")
 ax7.set_xticks([0,1])
 ax7.set_xticklabels(['Before','After'])
+spines(ax7)
 
 for ii,neuron in enumerate(np.unique(raster_senders_b)):
     times_temp = raster_times_b[raster_senders_b==neuron]/1000.
-    ax9.scatter(times_temp,ii*np.ones(len(times_temp)),color='grey',s=0.2,linewidth=0,rasterized=False)
-ax9.set_ylabel("Before")
+    ax9.scatter(times_temp,ii*np.ones(len(times_temp)),color='grey',s=0.3,linewidth=0,rasterized=False)
+ax9.set_yticks([])
+spines(ax9)
+ax9.spines['left'].set_visible(False)
+fig.text(0.01,0.47,"Before",rotation='vertical')
+ax9.text(1996.5,-15,"assembly",rotation='vertical')
+
+#fig.text(0.035,0.46,"Neurons",rotation='vertical')
+
+rectangle = patches.Rectangle((1996.8,0),0.1,par.assembly_size,color=color_ass,clip_on=False)
+ax9.add_patch(rectangle)
 
 for ii,neuron in enumerate(np.unique(raster_senders_a)):
     times_temp = raster_times_a[raster_senders_a==neuron]/1000.
-    ax9a.scatter(times_temp,ii*np.ones(len(times_temp)),color='grey',s=0.2,linewidth=0,rasterized=False)
-ax9a.set_ylabel("After")
+    ax9a.scatter(times_temp,ii*np.ones(len(times_temp)),color='grey',s=0.3,linewidth=0,rasterized=False)
 ax9a.set_xlabel("Time [s]")
+ax9a.set_yticks([])
+spines(ax9a)
+ax9a.spines['left'].set_visible(False)
+fig.text(0.01,0.18,"After",rotation='vertical')
+ax9a.text(2497.5,-15,"assembly",rotation='vertical')
+
+#fig.text(0.035,0.16,"Neurons",rotation='vertical')
+
+rectangle = patches.Rectangle((2497.8,0),0.1,par.assembly_size,color=color_ass,clip_on=False)
+ax9a.add_patch(rectangle)
 
 # Readout rate
 readout_ass_before_plastic = []
@@ -235,15 +298,26 @@ for seed in seeds:
     readout_ass_before_plastic.append(f.rate_mean(times_ass_plastic,par.save_for,1))
     readout_exc_before_plastic.append(f.rate_mean(times_exc_plastic,par.save_for,1))
     
-ax8.bar(0-width/2,height=np.mean(readout_ass_before_plastic),width=width,yerr=np.std(readout_ass_before_plastic),color=color_ass)
-ax8.bar(0+width/2,height=np.mean(readout_exc_before_plastic),width=width,yerr=np.std(readout_exc_before_plastic),color=color_exc)   
-ax8.bar(1-width/2,height=np.mean(readout_ass_after_plastic),width=width,yerr=np.std(readout_ass_after_plastic),color=color_ass)
-ax8.bar(1+width/2,height=np.mean(readout_exc_after_plastic),width=width,yerr=np.std(readout_exc_after_plastic),color=color_exc)
-
+ax8.bar(0-width/2,height=np.mean(readout_ass_before_plastic),width=width,yerr=np.std(readout_ass_before_plastic),edgecolor=color_ass,color='white')
+ax8.bar(0+width/2,height=np.mean(readout_exc_before_plastic),width=width,yerr=np.std(readout_exc_before_plastic),edgecolor=color_exc,color='white')   
+ax8.bar(1-width/2,height=np.mean(readout_ass_after_plastic),width=width,yerr=np.std(readout_ass_after_plastic),edgecolor=color_ass,color='white',label='within\nassembly')
+ax8.bar(1+width/2,height=np.mean(readout_exc_after_plastic),width=width,yerr=np.std(readout_exc_after_plastic),edgecolor=color_exc,color='white',label='outside\nassembly')
+ax8.legend(bbox_to_anchor=(2.2, 1.3))
 ax8.set_ylabel("Readout rate [Hz]")
 ax8.set_xticks([0,1])
 ax8.set_xticklabels(['Before','After'])
+spines(ax8)
+
+fig.text(0.01,0.96,'A')
+fig.text(0.01,0.63,'B')
+fig.text(0.28,0.96,'C')
+fig.text(0.28,0.6,'D')
+fig.text(0.49,0.9,'E')
+fig.text(0.53,0.6,'F')
+fig.text(0.75,0.96,'G')
+fig.text(0.74,0.61,'H')
 
 fig.set_size_inches(7,3.5)
 
-plt.savefig(par.path_to_figure[where]+"figure_assembly_"+mode+"_"+str(stim_idx)+".pdf",dpi=300)
+plt.savefig(par.path_to_figure[where]+"figure_assembly_"+mode+"_"+str(stim_idx)+".svg",dpi=600)
+#plt.show()

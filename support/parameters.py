@@ -5,19 +5,16 @@ path_to_nest           = {}
 path_to_nest['local']  = '/home/julia/Documents/NEST/nest-2.20.0_custom/lib/python3.8/site-packages'
 path_to_nest['brain9'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.0_custom/lib/python3.8/site-packages'
 path_to_nest['brain5'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.0_custom/lib/python3.6/site-packages'
-path_to_nest['brain1'] = '/home/jgallina/nest_custom_env/NEST/nest-2.20.1_custom/lib/python3.6/site-packages'
 
 path_to_figure           = {}
 path_to_figure['local']  = '/home/julia/Documents/iSTDP/paper/main/figures/'
 path_to_figure['brain9'] = '/home/jgallina/homedir/iSTDP/figures/'
 path_to_figure['brain5'] = '/home/jgallina/homedir/iSTDP/figures/'
-path_to_figure['brain1'] = '/home/jgallina/homedir/iSTDP/figures/'
 
 path_to_data           = {}
 path_to_data['local']  = '/home/julia/Documents/iSTDP/paper/main/data/'
 path_to_data['brain9'] = '/home/jgallina/homedir/iSTDP/data/'
 path_to_data['brain5'] = '/home/jgallina/homedir/iSTDP/data/'
-path_to_data['brain1'] = '/home/jgallina/homedir/iSTDP/data/'
 
 
 # Simulation
@@ -30,7 +27,7 @@ print_time = True
 # Neuron 
 neuron_model = 'iaf_psc_exp'
 delay        = 1.5              # Synaptic delay (ms)
-tau_m        = 20.0             # Membrane time constant (mV)
+tau_m        = 20.0             # Membrane time constant (ms)
 V_th         = 20.0             # Spike threshold (mV)
 C_m          = 250.0            # Membrane capacitance (pF)
 t_ref        = 2.0              # Refractory period (ms)
@@ -153,16 +150,17 @@ stim_strength_all = np.array([1,2,3,4,5])               # Strength of stimulatio
 
 # Single readout simulation
 readout_n_spikes = 1000
-readout_sim_time = 50000.
+readout_sim_time = 55000.
 readout_warmup   = 5000.
 readout_binsize  = 10.
 readout_bins     = np.arange(0,readout_sim_time+readout_binsize,readout_binsize)
 CV_all           = np.arange(.4,1.5,0.1)
 
 # Weight decay analysis
-shift_all = np.array([0,3000,4000,5000])
+shift_all = np.array([0,3000])
 binsize_cc = 10.
 cv_interval = 50000.
+cc_interval = 1000000.
 rate_interval = 50000.
 min_t_decay = 3000000.
 max_t_decay = 4000000.

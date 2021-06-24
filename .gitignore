@@ -1,5 +1,6 @@
 # Ignore data
 *.hdf5
+*.npy
 data/
 
 # Ignore figures

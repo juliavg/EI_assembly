@@ -17,6 +17,8 @@ matplotlib.rcParams.update({'font.size': 7})
 
 data  = h5.File(par.path_to_data[where]+'data_single_readout.hdf5','r')
 
+color = 'grey'
+
 def spines(ax):
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
@@ -36,17 +38,17 @@ def plot_row(data_mode,axes):
     rate_out = np.array(data_mode['rate_out'])
     cv_in    = np.array(data_mode['cv_in'])
     
-    axes[0].plot(np.mean(cv_in,axis=1),mean_vm)
+    axes[0].plot(np.mean(cv_in,axis=1),mean_vm,color=color)
     axes[0].set_xlabel(r"$\mathregular{CV_{in}}$")
-    axes[0].set_ylabel(r"$\mu_{V_m}$")
+    axes[0].set_ylabel(r"Subthres. mean, $\mu_{V_m}$")
     spines(axes[0])
 
-    axes[1].plot(np.mean(cv_in,axis=1),std_vm)
+    axes[1].plot(np.mean(cv_in,axis=1),std_vm,color=color)
     axes[1].set_xlabel(r"$\mathregular{CV_{in}}$")
-    axes[1].set_ylabel(r"$\sigma_{V_m}$")
+    axes[1].set_ylabel(r"Subthres. std, $\sigma_{V_m}$")
     spines(axes[1])
 
-    axes[2].plot(np.mean(cv_in,axis=1),rate_out)
+    axes[2].plot(np.mean(cv_in,axis=1),rate_out,color=color)
     axes[2].set_xlabel(r"$\mathregular{CV_{in}}$")
     axes[2].set_ylabel("Rate [Hz]")
     spines(axes[2])
@@ -62,6 +64,11 @@ fig.text(0.03,0.96,'A')
 fig.text(0.305,0.96,'B')
 fig.text(0.53,0.96,'C')
 fig.text(0.755,0.96,'D')
+fig.text(0.03,0.5,'E')
+fig.text(0.305,0.5,'F')
+fig.text(0.53,0.5,'G')
+fig.text(0.755,0.5,'H')
+
 
 fig.text(0.01,0.69,'No plasticity',rotation='vertical')
 fig.text(0.01,0.11,'Short term facilitation',rotation='vertical')
@@ -69,4 +76,4 @@ fig.text(0.01,0.11,'Short term facilitation',rotation='vertical')
 data.close()
 
 fig.set_size_inches(7,3)
-plt.savefig(par.path_to_figure[where]+"figure_single_readout.pdf")
+plt.savefig(par.path_to_figure[where]+"figure_single_readout.svg")

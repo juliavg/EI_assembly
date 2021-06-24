@@ -49,7 +49,7 @@ def cv(spk_times):
     return np.std(isi)/np.mean(isi)
 
 def cc(times_spikes_pre,times_spikes_post,binsize):
-    time_bins        = np.arange(0,min([max(times_spikes_pre),max(times_spikes_post)]),binsize)
+    time_bins        = np.arange(min([min(times_spikes_pre),min(times_spikes_post)]),max([max(times_spikes_pre),max(times_spikes_post)])+binsize,binsize)
     spk_train_source = np.histogram(times_spikes_pre,bins=time_bins)[0]
     spk_train_target = np.histogram(times_spikes_post,bins=time_bins)[0]
     spk_train_source[spk_train_source>1] = 1
