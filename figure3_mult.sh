@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPTS="$(pwd)/scripts/"
-WHERE="brain5"
+WHERE="local"
 MODE="plastic"
 
 for i in {0..2}

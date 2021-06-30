@@ -5,26 +5,17 @@ import matplotlib
 import h5py as h5
 from importlib import reload
 import sys
-
 direc = sys.argv[0].split('scripts')[0]
 where = sys.argv[1]
-
 sys.path.append(direc+'support')
 import parameters
 reload(parameters)
 import parameters as par
 
-matplotlib.rcParams.update({'font.size': 7})
-
+matplotlib.rcParams.update({'font.size': par.fontsize})
 colors = np.array([[252,187,161],[251,106,74],[165,15,21]])/255.
 
-def spines(ax):
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-
 fig = plt.figure(figsize=(7,3))
-
-
 ax = fig.add_axes([0.15,0.15,0.8,0.8])
 
 data = h5.File(par.path_to_data[where]+"data_assembly.hdf5",'r')
@@ -35,8 +26,8 @@ for jj,J in enumerate(j_all):
     seed  = list(data_mode[J+'/seeds/'].keys())[0]
     group = data_mode[J+'/seeds/'+seed]
     
-    senders_all = np.array(group['sources'])#np.load(direc+"sources.npy")
-    targets_all = np.array(group['targets'])#np.load(direc+"targets.npy")
+    senders_all = np.array(group['sources'])
+    targets_all = np.array(group['targets'])
     
     group = group['steps']
     times   = np.array([])

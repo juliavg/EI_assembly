@@ -6,10 +6,8 @@ import h5py as h5
 from importlib import reload
 import sys
 import matplotlib.patches as patches
-
 direc = sys.argv[0].split('scripts')[0]
 where = sys.argv[1]
-
 sys.path.append(direc+'support')
 import parameters
 reload(parameters)
@@ -18,11 +16,8 @@ import functions
 reload(functions)
 import functions as f
 
-
-matplotlib.rcParams.update({'font.size': 7})
-
+matplotlib.rcParams.update({'font.size': par.fontsize})
 time_raster = 10000.
-
 color_ass = np.array([152,78,163])/255.
 
 J_all = ['5.0','5.5']
@@ -59,7 +54,6 @@ for jj,J in enumerate(J_all):
 
         axes[aa].scatter(times/1000.,senders,s=0.1,color='grey',linewidth=0,rasterized=True)
         axes[aa].set_yticks([])
-        #axes[aa].set_yticklabels(['ASB','EXC'])
         rectangle = patches.Rectangle((min(times/1000.)-0.1,0),0.05,par.assembly_size,color=color_ass,clip_on=False)
         axes[aa].add_patch(rectangle)
         
@@ -79,22 +73,18 @@ for jj,J in enumerate(J_all):
 
 fig.text(0.01,0.82,"Before stimulation",rotation='vertical')
 ax1.set_title(r"$W_{E \to E}^{max}$ = "+J_all[0]+" J")
-#fig.text(0.07,0.86,"Neurons",rotation='vertical')
 fig.text(0.04,0.83,"assembly")
 
 fig.text(0.01,0.64,"After stimulation",rotation='vertical')
 ax2.set_xlabel("Time [s]")
-#fig.text(0.07,0.68,"Neurons",rotation='vertical')
 fig.text(0.04,0.65,"assembly")
 
 fig.text(0.01,0.42,"Before stimulation",rotation='vertical')
 ax3.set_title(r"$W_{E \to E}^{max}$ = "+J_all[1]+" J")
-#fig.text(0.07,0.46,"Neurons",rotation='vertical')
 fig.text(0.04,0.43,"assembly")
 
 fig.text(0.01,0.24,"After stimulation",rotation='vertical')
 ax4.set_xlabel("Time [s]")
-#fig.text(0.07,0.28,"Neurons",rotation='vertical')
 fig.text(0.04,0.25,"assembly")
 
 ax_cc1.legend()
@@ -110,8 +100,6 @@ ax_cc2.set_title(r"$W_{E \to E}^{max}$ = "+J_all[1]+"J")
 fig.text(0.01,0.97,'A')
 fig.text(0.01,0.57,'B')
 fig.text(0.01,0.17,'C')
-
-#plt.show()
 
 fig.set_size_inches(6,7)
 plt.savefig(par.path_to_figure[where]+'figure_full_raster.pdf',dpi=300)

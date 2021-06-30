@@ -6,10 +6,8 @@ import matplotlib.colors as colors
 import matplotlib.cm as cmx
 import h5py as h5
 import sys
-
 direc = sys.argv[0].split('scripts')[0]
 where = sys.argv[1]
-
 sys.path.append(direc+'support')
 import parameters
 reload(parameters)

@@ -6,12 +6,10 @@ import h5py as h5
 from matplotlib import colors
 import sys
 import matplotlib.patches as patches
-
 direc = sys.argv[0].split('scripts')[0]
 where = sys.argv[1]
 mode  = sys.argv[2]
 stim_idx = int(sys.argv[3])
-
 sys.path.append(direc+'support')
 import parameters
 reload(parameters)

@@ -3,10 +3,8 @@ import matplotlib.pyplot as plt
 import h5py as h5
 from importlib import reload
 import sys
-
 direc = sys.argv[0].split('scripts')[0]
 where = sys.argv[1]
-
 sys.path.append(direc+'support')
 import parameters
 reload(parameters)

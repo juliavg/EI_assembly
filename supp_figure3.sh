@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPTS="$(pwd)/scripts/"
-WHERE="brain5"
+WHERE="local"
 MODE="speedup"
 
 for i in {0..2}
@@ -16,4 +16,4 @@ do
 done
 
 # Plots
-#python3 ${SCRIPTS}4_plot_decay_speedup.py $MODE
+python3 ${SCRIPTS}s3_plot_decay_speedup.py $MODE

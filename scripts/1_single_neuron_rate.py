@@ -2,10 +2,8 @@ from importlib import reload
 import numpy as np
 import h5py as h5
 import sys
-
 direc = sys.argv[0].split('scripts')[0]
 where = sys.argv[1]
-
 sys.path.append(direc+'support')
 import parameters
 reload(parameters)
@@ -13,7 +11,6 @@ import parameters as par
 import functions
 reload(functions)
 import functions as f
-sys.path.insert(2,par.path_to_nest[where])
 import nest
 
 # Create data file
