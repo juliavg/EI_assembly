@@ -15,35 +15,33 @@ import parameters
 reload(parameters)
 import parameters as par
 
-
-matplotlib.rcParams.update({'font.size': 7})
-
+matplotlib.rcParams.update({'font.size': par.fontsize})
 data = h5.File(par.path_to_data[where]+'data_single_neuron.hdf5','r')
 
-# Plot parameters
+# Parameters
 bar_width = 0.3
 
 # Colors
-color_shade  = (0.9,0.9,0.9)
-colors_J     = np.array([[252,187,161],[252,146,114],[251,106,74],[222,45,38],[165,15,21]])/255.
+color_shade = (0.9,0.9,0.9)
+colors_J = np.array([[252,187,161],[252,146,114],[251,106,74],[222,45,38],[165,15,21]])/255.
 colors_rates = np.array([[228,26,28],[55,126,184],[65,171,93],[152,78,163],[255,127,0]])/255.
 
 # Axes
-fig  = plt.figure(figsize=(7,3))
-ax2  = fig.add_axes([0.325,0.65,0.125,0.3])
-ax3  = fig.add_axes([0.55,0.65,0.125,0.3])
-ax4  = fig.add_axes([0.775,0.65,0.125,0.3])
+fig = plt.figure(figsize=(7,3))
+ax2 = fig.add_axes([0.325,0.65,0.125,0.3])
+ax3 = fig.add_axes([0.55,0.65,0.125,0.3])
+ax4 = fig.add_axes([0.775,0.65,0.125,0.3])
 ax4b = ax4.twinx()
-ax5  = fig.add_axes([0.1,0.15,0.125,0.3])
+ax5 = fig.add_axes([0.1,0.15,0.125,0.3])
 ax5b = fig.add_axes([0.25,0.15,0.01,0.3])
-ax6  = fig.add_axes([0.4,0.15,0.125,0.3])
+ax6 = fig.add_axes([0.4,0.15,0.125,0.3])
 ax6b = fig.add_axes([0.55,0.15,0.01,0.3])
-ax7  = fig.add_axes([0.72,0.15,0.125,0.3])
+ax7 = fig.add_axes([0.72,0.15,0.125,0.3])
 
 # Panel B
-ii = 3                                                                      # Selects which stim_strengh to plot weight and rate from
+ii = 3  # Selects which stim_strengh to plot weight and rate from
 weight = np.array(data['simulation/'+str(par.stim_strength_all[ii])+'/mean_weight'])
-time   = par.single_bins[:-1]/1000.
+time = par.single_bins[:-1]/1000.
 ax2.plot(time,weight,color='grey')
 ax2.set_xlabel("Time [s]")
 ax2.set_ylabel(r"$W_{I \to E}$ [pA]")
@@ -63,7 +61,7 @@ ax3.spines['top'].set_visible(False)
 # Panel D
 for ss,strength in enumerate(par.stim_strength_all):
     rate = np.array(data['simulation/'+str(strength)+'/rate_final'])
-    cv   = np.array(data['simulation/'+str(strength)+'/cv_all'])
+    cv = np.array(data['simulation/'+str(strength)+'/cv_all'])
     ax4.bar(ss-bar_width/2,height=np.mean(rate),width=bar_width,edgecolor=colors_J[ss],yerr=np.std(rate),facecolor='white')
     ax4b.bar(ss+bar_width/2,height=np.mean(cv),width=bar_width,color=colors_J[ss],yerr=np.std(cv))
 
@@ -74,19 +72,19 @@ ax4b.set_ylabel("CV")
 ax4.set_xlabel(r"$W_{E \to E}$")
 
 # Panel E
-mu_values   = np.array(data['theory/mu_all'])
-std_values  = np.array(data['theory/std_all'])
-rate        = np.array(data['theory/rate'])*1000.
-CV_all      = np.array(data['theory/CV_all'])
+mu_values = np.array(data['theory/mu_all'])
+std_values = np.array(data['theory/std_all'])
+rate = np.array(data['theory/rate'])*1000.
+CV_all = np.array(data['theory/CV_all'])
 CV_contours = data['theory/CV_contours']
-CS_rates    = data['theory/CS_rates']
+CS_rates = data['theory/CS_rates']
 
 rates_contour = (par.rates_contour*1000.).astype(int)
 
 rmin = 0
 rmax = np.max(rate)
-X,Y  = np.meshgrid(mu_values,std_values)
-im   = ax5.pcolor(X,Y,rate.T,cmap='viridis',vmin=rmin,vmax=rmax,rasterized=True)
+X,Y = np.meshgrid(mu_values,std_values)
+im = ax5.pcolor(X,Y,rate.T,cmap='viridis',vmin=rmin,vmax=rmax,rasterized=True)
 cbar = fig.colorbar(im,cax=ax5b)
 ax5.contour(X,Y, rate.T,levels=rates_contour,colors='k',linewidths=1)
 
@@ -102,18 +100,18 @@ ax5.set_xlabel(r"Subthres. mean, $\mu$ [mV]")
 ax5.set_ylabel(r"Subthres. std, $\sigma$ [mV]")
 
 # Panel F
-X,Y  = np.meshgrid(mu_values,std_values)
-im   = ax6.pcolor(X,Y,CV_all.T,cmap='viridis',rasterized=True)
+X,Y = np.meshgrid(mu_values,std_values)
+im = ax6.pcolor(X,Y,CV_all.T,cmap='viridis',rasterized=True)
 cbar = fig.colorbar(im,cax=ax6b)
-CS   = ax6.contour(X,Y, CV_all.T,colors='k',linewidths=1)
+CS = ax6.contour(X,Y, CV_all.T,colors='k',linewidths=1)
 cbar.set_label("CV")
 ax6.set_xlabel(r"Subthres. mean, $\mu$ [mV]")
 ax6.set_ylabel(r"Subthres. std, $\sigma$ [mV]")
 
 
 # Panel G
-cNorm  = colors.Normalize(vmin=0, vmax=rmax)
-cm=plt.get_cmap('viridis')
+cNorm = colors.Normalize(vmin=0, vmax=rmax)
+cm = plt.get_cmap('viridis')
 scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cm)
 
 for ii in np.arange(rates_contour.shape[0]): 

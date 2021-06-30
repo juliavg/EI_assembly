@@ -12,16 +12,13 @@ sys.path.append(direc+'support')
 import parameters
 reload(parameters)
 import parameters as par
+import functions
+reload(functions)
+import functions as f
 
-matplotlib.rcParams.update({'font.size': 7})
-
-data  = h5.File(par.path_to_data[where]+'data_single_readout.hdf5','r')
-
+matplotlib.rcParams.update({'font.size': par.fontsize})
+data = h5.File(par.path_to_data[where]+'data_single_readout.hdf5','r')
 color = 'grey'
-
-def spines(ax):
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
 
 fig = plt.figure(figsize=(7,3))
 
@@ -41,17 +38,17 @@ def plot_row(data_mode,axes):
     axes[0].plot(np.mean(cv_in,axis=1),mean_vm,color=color)
     axes[0].set_xlabel(r"$\mathregular{CV_{in}}$")
     axes[0].set_ylabel(r"Subthres. mean, $\mu_{V_m}$")
-    spines(axes[0])
+    f.spines(axes[0])
 
     axes[1].plot(np.mean(cv_in,axis=1),std_vm,color=color)
     axes[1].set_xlabel(r"$\mathregular{CV_{in}}$")
     axes[1].set_ylabel(r"Subthres. std, $\sigma_{V_m}$")
-    spines(axes[1])
+    f.spines(axes[1])
 
     axes[2].plot(np.mean(cv_in,axis=1),rate_out,color=color)
     axes[2].set_xlabel(r"$\mathregular{CV_{in}}$")
     axes[2].set_ylabel("Rate [Hz]")
-    spines(axes[2])
+    f.spines(axes[2])
 
 plot_row(data['stp'],[ax5,ax6,ax7])
 plot_row(data['static'],[ax2,ax3,ax4])

@@ -179,3 +179,6 @@ triplets_shift = {'tau_minus' : tau_minus,
                   'WmaxE'     : WmaxE_shift,
                   'WminE'     : WminE_shift,
                   'weight'    : WmaxE_shift}
+                  
+# Plot
+fontsize = 7
