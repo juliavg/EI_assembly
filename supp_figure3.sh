@@ -9,7 +9,7 @@ do
    STIM_IDX=$i
    MASTER_SEED=$(expr 17 + $i)
    
-   source /home/jgallina/nest_custom_env/bin/activate
+   #source 
 
     # Runs simulation
     python3 ${SCRIPTS}3_simulation_assembly.py $WHERE $MODE $MASTER_SEED $STIM_IDX
