@@ -146,24 +146,24 @@ for seed in seeds:
 # Figure
 fig = plt.figure(figsize=(7,3.5))
 
-ax2a = fig.add_axes([0.3,0.42,0.1,0.2])  
-ax2b = fig.add_axes([0.3,0.12,0.1,0.2])  
-ax2c = fig.add_axes([0.41,0.12,0.01,0.5])  
+ax2a = fig.add_axes([0.33,0.42,0.1,0.2])  
+ax2b = fig.add_axes([0.33,0.12,0.1,0.2])  
+ax2c = fig.add_axes([0.44,0.12,0.01,0.5])  
 
 ax3a = fig.add_axes([0.55,0.42,0.1,0.2])
 ax3b = fig.add_axes([0.55,0.12,0.1,0.2])
 ax3c = fig.add_axes([0.66,0.12,0.01,0.5])
 
-ax4a = fig.add_axes([0.75,0.38,0.16,0.2])
-ax4b = fig.add_axes([0.75,0.12,0.16,0.2])
-ax4c = fig.add_axes([0.9,0.12,0.01,0.46])
+ax4a = fig.add_axes([0.05,0.38,0.16,0.2])
+ax4b = fig.add_axes([0.05,0.12,0.16,0.2])
+ax4c = fig.add_axes([0.2,0.12,0.01,0.46])
 
-ax6  = fig.add_axes([0.3,0.72,0.1,0.2])
+ax6  = fig.add_axes([0.33,0.72,0.1,0.2])
 ax7  = fig.add_axes([0.55,0.72,0.1,0.2])
 ax8  = fig.add_axes([0.77,0.72,0.1,0.2])
 
-ax9  = fig.add_axes([0.07,0.42,0.18,0.2])
-ax9a = fig.add_axes([0.07,0.12,0.18,0.2])
+ax9  = fig.add_axes([0.78,0.42,0.18,0.2])
+ax9a = fig.add_axes([0.78,0.12,0.18,0.2])
 
 # Panel D
 ax2a.imshow(rate_matrix_before,vmin=min_rate,vmax=max_rate,cmap=cmap,rasterized=True)
@@ -189,7 +189,7 @@ ax3b.set_yticks([])
 f.plot_assembly_rectangle(ax3a)
 f.plot_assembly_rectangle(ax3b)
 
-# Panel H
+# Panel G
 ax4a.imshow(weight_before,vmin=min_w,vmax=max_w,cmap=cmap_w,norm=norm,rasterized=True)
 im = ax4b.imshow(weight_after,vmin=min_w,vmax=max_w,cmap=cmap_w,norm=norm,rasterized=True)
 cbar = fig.colorbar(im,cax=ax4c)
@@ -232,7 +232,7 @@ ax6.bar(1+bar_width/2,height=np.mean(rate_post[par.assembly_size:par.N_E]),
                   yerr=np.std(rate_post[par.assembly_size:par.N_E]),
                   color=color_exc,
                   label='outside assembly')
-ax6.legend(bbox_to_anchor=(4.,1.4),ncol=2)
+ax6.legend(bbox_to_anchor=(3.8,1.4),ncol=2)
 ax6.set_ylabel("Firing rate [Hz]")
 ax6.set_xticks([0,1])
 ax6.set_xticklabels(['Before','After'])
@@ -267,7 +267,7 @@ for ii,neuron in enumerate(np.unique(raster_senders_b)):
 ax9.set_yticks([])
 f.spines(ax9)
 ax9.spines['left'].set_visible(False)
-fig.text(0.01,0.47,"Before",rotation='vertical')
+fig.text(0.01,0.45,"Before",rotation='vertical')
 ax9.text(1996.5,-15,"assembly",rotation='vertical')
 rectangle = patches.Rectangle((1996.8,0),0.1,par.assembly_size,color=color_ass,clip_on=False)
 ax9.add_patch(rectangle)
@@ -279,13 +279,13 @@ ax9a.set_xlabel("Time [s]")
 ax9a.set_yticks([])
 f.spines(ax9a)
 ax9a.spines['left'].set_visible(False)
-fig.text(0.01,0.18,"After",rotation='vertical')
+fig.text(0.01,0.195,"After",rotation='vertical')
 ax9a.text(2497.5,-15,"assembly",rotation='vertical')
 rectangle = patches.Rectangle((2497.8,0),0.1,par.assembly_size,color=color_ass,clip_on=False)
 ax9a.add_patch(rectangle)
 
 
-# Panel G
+# Panel H
 ax8.bar(0-bar_width/2,height=np.mean(readout_ass_before_plastic),
                       width=bar_width,
                       yerr=np.std(readout_ass_before_plastic),
@@ -316,12 +316,12 @@ f.spines(ax8)
 
 fig.text(0.01,0.96,'A')
 fig.text(0.01,0.63,'B')
-fig.text(0.28,0.96,'C')
-fig.text(0.28,0.6,'D')
-fig.text(0.49,0.9,'E')
+fig.text(0.31,0.96,'C')
+fig.text(0.31,0.6,'D')
+fig.text(0.52,0.9,'E')
 fig.text(0.53,0.6,'F')
-fig.text(0.75,0.96,'G')
-fig.text(0.74,0.61,'H')
+fig.text(0.75,0.96,'H')
+fig.text(0.76,0.61,'G')
 
 fig.set_size_inches(7,3.5)
 

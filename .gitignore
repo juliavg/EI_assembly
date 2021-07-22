@@ -16,3 +16,6 @@ test/
 
 # Ignore pyc
 *.pyc
+
+# Ignore manuscript
+overleaf_versions/

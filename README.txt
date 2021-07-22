@@ -4,9 +4,11 @@ This is the code used for generating the figures on the paper
 
 In order to run it, you will need the following:
 
-1) Python modules: numpy, matplotlib, h5py, scipy
+1) Python 3
 
-2) Network simulator NEST. The simulations were performed on NEST 2.20.0, but with a small alteration on the rule for the tripled-based STDP model. Essentially, a minimum bound for the weights was introduced, as compared to the standard NEST distribution. In order to install this version of NEST, follow the steps:
+2) Python modules: numpy, matplotlib, h5py, scipy
+
+3) Network simulator NEST. The simulations were performed on NEST 2.20.0, but with a small alteration on the rule for the tripled-based STDP model. Essentially, a minimum bound for the weights was introduced, as compared to the standard NEST distribution. In order to install this version of NEST, follow the steps:
 
 - Download the source code:
 git clone https://github.com/juliavg/nest-simulator.git
