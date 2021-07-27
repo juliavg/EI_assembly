@@ -1,7 +1,7 @@
 # Memories in a network with excitatory and inhibitory plasticity are encoded in the spiking irregularity 
 Júlia V. Gallinaro, Claudia Clopath
 
-This is the code used for all simulations and figures in the paper
+This is the code used for all simulations and figures in the [paper](https://www.biorxiv.org/content/10.1101/2021.07.22.453370v1)
 
 ---
 
