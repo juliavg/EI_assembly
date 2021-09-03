@@ -8,6 +8,8 @@ import sys
 direc = sys.argv[0].split('scripts')[0]
 where = sys.argv[1]
 synapse_type = sys.argv[2]
+if synapse_type=='static':
+    reference_cv = sys.argv[3]
 sys.path.append(direc+'support')
 import parameters
 reload(parameters)
@@ -39,22 +41,26 @@ for cc,CV in enumerate(par.CV_all):
     # Set defaults
     nest.SetDefaults(par.neuron_model,par.neuron_param_dict)
 
-    nest.CopyModel('static_synapse',
-                   'static',
-                   {'weight':par.J_E, 
-                    'delay':par.delay})
+    if synapse_type=='static':
+        mean_weight = np.array(data['stp/weights/'+reference_cv+'/mean_weight/'])
+        mean_weight = np.mean(mean_weight[par.readout_bins[:-1]>par.readout_warmup])
+        nest.CopyModel('static_synapse',
+                       'synapse',
+                      {'weight':mean_weight, 
+                       'delay':par.delay})
                     
-    nest.CopyModel("tsodyks_synapse", 
-               "stp",
-               {"tau_psc": par.tau_psc,
-                "tau_rec": par.tau_rec,
-                "tau_fac": par.tau_fac,
-                "U"      : par.U,
-                "delay"  : par.delay,
-                "weight" : par.A,
-                "u"      : 0.0,
-                "x"      : 1.0,
-                'weight_recorder': weight_recorder[0]})
+    elif synapse_type=='stp':
+        nest.CopyModel("tsodyks_synapse", 
+                   "synapse",
+                   {"tau_psc": par.tau_psc,
+                    "tau_rec": par.tau_rec,
+                    "tau_fac": par.tau_fac,
+                    "U"      : par.U,
+                    "delay"  : par.delay,
+                    "weight" : par.A,
+                    "u"      : 0.0,
+                    "x"      : 1.0,
+                    'weight_recorder': weight_recorder[0]})
 
     # Create nodes
     spike_generator = nest.Create("spike_generator",par.assembly_size)
@@ -73,11 +79,11 @@ for cc,CV in enumerate(par.CV_all):
 
     # Connect nodes
     nest.Connect(spike_generator,parrot_neurons,'one_to_one')
-    nest.Connect(parrot_neurons,[output_neurons[0]],'all_to_all',syn_spec=synapse_type)
+    nest.Connect(parrot_neurons,[output_neurons[0]],'all_to_all',syn_spec='synapse')
     nest.Connect([output_neurons[0]],[spike_detector[0]])
     nest.Connect(parrot_neurons,[spike_detector[1]])
     nest.Connect(noise,[output_neurons[0]])
-    nest.Connect(parrot_neurons,[output_neurons[1]],'all_to_all',syn_spec=synapse_type)
+    nest.Connect(parrot_neurons,[output_neurons[1]],'all_to_all',syn_spec='synapse')
     nest.Connect(multimeter,[output_neurons[1]])
     nest.Connect(noise,[output_neurons[1]])
 
@@ -109,6 +115,7 @@ for cc,CV in enumerate(par.CV_all):
         wr_status  = nest.GetStatus(weight_recorder,'events')[0]
         wr_times   = wr_status['times']
         wr_weights = wr_status['weights']
+        wr_senders = wr_status['senders']
         
         mean_weight = np.histogram(wr_times,bins=par.readout_bins,weights=wr_weights)[0]/np.histogram(wr_times,bins=par.readout_bins)[0]
         
@@ -117,6 +124,7 @@ for cc,CV in enumerate(par.CV_all):
         f.save_to_group(data_cv,mean_weight,'mean_weight')
         f.save_to_group(data_cv,wr_times,'wr_times')
         f.save_to_group(data_cv,wr_weights,'wr_weights')
+        f.save_to_group(data_cv,wr_senders,'wr_senders')
 
 f.save_to_group(data_mode,rate_out,'rate_out')
 f.save_to_group(data_mode,cv_in,'cv_in')
