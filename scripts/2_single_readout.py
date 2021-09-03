@@ -97,12 +97,6 @@ for cc,CV in enumerate(par.CV_all):
         spk_times    = spk_times[spk_times>par.readout_warmup]
         cv_in[cc,ii] = f.cv(spk_times)
 
-    wr_status  = nest.GetStatus(weight_recorder,'events')[0]
-    wr_times   = wr_status['times']
-    wr_weights = wr_status['weights']
-    
-    mean_weight = np.histogram(wr_times,bins=par.readout_bins,weights=wr_weights)[0]/np.histogram(wr_times,bins=par.readout_bins)[0]/par.assembly_size
-
     rate_out[cc] = f.rate_mean(times[times>par.readout_warmup],(par.readout_sim_time-par.readout_warmup),1)
     
     events = nest.GetStatus(multimeter,'events')[0]
@@ -110,6 +104,19 @@ for cc,CV in enumerate(par.CV_all):
     tvm    = events['times']
     mean_vm[cc] = np.mean(vm[tvm>par.readout_warmup])
     std_vm[cc]  = np.std(vm[tvm>par.readout_warmup])
+    
+    if synapse_type=='stp':
+        wr_status  = nest.GetStatus(weight_recorder,'events')[0]
+        wr_times   = wr_status['times']
+        wr_weights = wr_status['weights']
+        
+        mean_weight = np.histogram(wr_times,bins=par.readout_bins,weights=wr_weights)[0]/np.histogram(wr_times,bins=par.readout_bins)[0]
+        
+        data_weight = data_mode.require_group('weights')
+        data_cv = data_weight.require_group(str(CV))
+        f.save_to_group(data_cv,mean_weight,'mean_weight')
+        f.save_to_group(data_cv,wr_times,'wr_times')
+        f.save_to_group(data_cv,wr_weights,'wr_weights')
 
 f.save_to_group(data_mode,rate_out,'rate_out')
 f.save_to_group(data_mode,cv_in,'cv_in')
