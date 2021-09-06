@@ -14,7 +14,6 @@ import parameters as par
 import functions
 reload(functions)
 import functions as f
-sys.path.insert(1,'/home/julia/Documents/NEST/nest-2.20.0_custom/lib/python3.8/site-packages/')
 import nest
 
 data  = h5.File(par.path_to_data[where]+'data_assembly.hdf5','a')
