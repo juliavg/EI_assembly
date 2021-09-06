@@ -96,15 +96,15 @@ min_cv = min([np.min(cv_matrix_before),np.min(cv_matrix_post)])
 max_cv = max([np.max(cv_matrix_before),np.max(cv_matrix_post)])
 
 # Creates connectivity matrix
-sources = np.array(group_single['grow/connections/sources'])-3
-targets = np.array(group_single['grow/connections/targets'])-3
+sources = np.array(group_single['grow/connections/sources'])-4
+targets = np.array(group_single['grow/connections/targets'])-4
 weights = np.array(group_single['grow/connections/weights'])
 
 matrix_before = np.zeros((par.N_neurons,par.N_neurons))
 matrix_before[targets,sources] = weights
 
-sources = np.array(group_single['post/connections/sources'])-3
-targets = np.array(group_single['post/connections/targets'])-3
+sources = np.array(group_single['post/connections/sources'])-4
+targets = np.array(group_single['post/connections/targets'])-4
 weights = np.array(group_single['post/connections/weights'])
 matrix_after = np.zeros((par.N_neurons,par.N_neurons))
 matrix_after[targets,sources] = weights
