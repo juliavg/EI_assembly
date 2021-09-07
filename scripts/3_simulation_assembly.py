@@ -252,7 +252,7 @@ def simulation_cycle(data,global_time,simulation_time,label):
 
 group = group.require_group('steps')
 
-nest.SetStatus(spk_all_neuron,{'start':par.warmup_time-par.save_for,'stop':par.warmup_time+par.stimulation_time})
+nest.SetStatus(spk_all_neuron,{'start':par.warmup_time-par.save_for,'stop':par.warmup_time+par.stimulation_time+par.save_for})
 
 global_time = 0.
 global_time = simulation_cycle(group,global_time,par.warmup_time,par.labels[0])
