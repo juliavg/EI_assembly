@@ -52,7 +52,6 @@ nest.SetKernelStatus({'print_time'          : par.print_time,
 
 weight_E = nest.Create('weight_recorder')
 weight_I = nest.Create('weight_recorder')
-weight_R = nest.Create('weight_recorder')
 
 nest.SetDefaults(par.neuron_model,par.neuron_param_dict)
 
@@ -105,8 +104,7 @@ nest.CopyModel('tsodyks_synapse',
                 'delay'     : 0.1,
                 'weight'    : par.A,
                 'u'         : 0.0,
-                'x'         : 1.0,
-                'weight_recorder'   : weight_R[0]})
+                'x'         : 1.0})
 
 # Create nodes -------------------------------------------------
 
@@ -237,9 +235,6 @@ def simulation_cycle(data,global_time,simulation_time,label):
     events = nest.GetStatus(weight_I,'events')[0]
     save_weight_data(group.require_group('weight_I'),events)    
     
-    events = nest.GetStatus(weight_R,'events')[0]
-    save_weight_data(group.require_group('weight_R'),events)  
-    
     connections = nest.GetConnections(neurons,neurons)
     group = group.require_group('connections')
     f.save_to_group(group,np.array(nest.GetStatus(connections,'source')),'sources')
@@ -252,7 +247,6 @@ def simulation_cycle(data,global_time,simulation_time,label):
     nest.SetStatus(spk_readout,'n_events',0)
     nest.SetStatus(weight_E,'n_events',0)
     nest.SetStatus(weight_I,'n_events',0)
-    nest.SetStatus(weight_R,'n_events',0)
     
     return global_time+simulation_time
 
