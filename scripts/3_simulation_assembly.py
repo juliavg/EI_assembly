@@ -115,7 +115,7 @@ neurons_E_assembly      = neurons_E[:par.assembly_size]
 neurons_E_non_assembly  = neurons_E[par.assembly_size:]
 readout                 = nest.Create(par.neuron_model,4)
 
-spk_all_neuron  = nest.Create('spike_detector')
+#spk_all_neuron  = nest.Create('spike_detector')
 spk_all_sim     = nest.Create('spike_detector')
 spk_readout     = nest.Create('spike_detector')
 external_input  = nest.Create('poisson_generator', 2)
@@ -190,8 +190,9 @@ f.save_to_group(group,targets,'targets')
 nest.Connect(noise,readout)
 
 # Connect spike detector
-nest.Connect(tuple(np.unique(list(sources)+list(targets)))+neurons_E_non_assembly[:par.rec_spk_from]+neurons_I[:par.rec_spk_from],spk_all_sim)
-nest.Connect(neurons,spk_all_neuron)
+#nest.Connect(tuple(np.unique(list(sources)+list(targets)))+neurons_E_non_assembly[:par.rec_spk_from]+neurons_I[:par.rec_spk_from],spk_all_sim)
+nest.Connect(neurons,spk_all_sim)
+#nest.Connect(neurons,spk_all_neuron)
 nest.Connect(readout,spk_readout)
 
 # Simulate -----------------------------------------------------
@@ -222,8 +223,8 @@ def simulation_cycle(data,global_time,simulation_time,label):
     events = nest.GetStatus(spk_all_sim,'events')[0]
     save_spiking_data(group.require_group('all_sim'),events)
     
-    events  = nest.GetStatus(spk_all_neuron,'events')[0]
-    save_spiking_data(group.require_group('all_neuron'),events)
+    #events  = nest.GetStatus(spk_all_neuron,'events')[0]
+    #save_spiking_data(group.require_group('all_neuron'),events)
     
     events  = nest.GetStatus(spk_readout,'events')[0]
     save_spiking_data(group.require_group('readout'),events)
@@ -243,7 +244,7 @@ def simulation_cycle(data,global_time,simulation_time,label):
 
     # Clean ---------------------------------------------------------
     nest.SetStatus(spk_all_sim,'n_events',0)
-    nest.SetStatus(spk_all_neuron,'n_events',0)
+    #nest.SetStatus(spk_all_neuron,'n_events',0)
     nest.SetStatus(spk_readout,'n_events',0)
     nest.SetStatus(weight_E,'n_events',0)
     nest.SetStatus(weight_I,'n_events',0)
@@ -252,7 +253,7 @@ def simulation_cycle(data,global_time,simulation_time,label):
 
 group = group.require_group('steps')
 
-nest.SetStatus(spk_all_neuron,{'start':par.warmup_time-par.save_for,'stop':par.warmup_time+par.stimulation_time+par.save_for})
+#nest.SetStatus(spk_all_neuron,{'start':par.warmup_time-par.save_for,'stop':par.warmup_time+par.stimulation_time+par.save_for})
 
 global_time = 0.
 global_time = simulation_cycle(group,global_time,par.warmup_time,par.labels[0])
@@ -264,8 +265,8 @@ else:           # mode=='plastic' or mode=='speedup'
     nest.SetStatus([external_input[0]],'rate',par.stim_strength*par.p_rate)
 global_time = simulation_cycle(group,global_time,par.stimulation_time,par.labels[1])
 
-stop_time = par.warmup_time+par.stimulation_time+par.post_stimulation_time
-nest.SetStatus(spk_all_neuron,{'start':stop_time-par.save_for,'stop':stop_time})
+#stop_time = par.warmup_time+par.stimulation_time+par.post_stimulation_time
+#nest.SetStatus(spk_all_neuron,{'start':stop_time-par.save_for,'stop':stop_time})
 
 nest.SetStatus([external_input[0]],'rate',par.p_rate)       # independent of mode because going back to default value
 global_time = simulation_cycle(group,global_time,par.post_stimulation_time,par.labels[2])
