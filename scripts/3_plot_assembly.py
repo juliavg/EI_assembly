@@ -37,8 +37,10 @@ senders      = np.array([])
 times        = np.array([])
 group_single = group[seeds[0]+'/steps']
 for label in par.labels:
-    senders = np.concatenate((senders,np.array(group_single[label+"/all_neuron/senders"])))
-    times   = np.concatenate((times,np.array(group_single[label+"/all_neuron/times"])))
+    #senders = np.concatenate((senders,np.array(group_single[label+"/all_neuron/senders"])))
+    senders = np.concatenate((senders,np.array(group_single[label+"/all_sim/senders"])))
+    #times   = np.concatenate((times,np.array(group_single[label+"/all_neuron/times"])))
+    times   = np.concatenate((times,np.array(group_single[label+"/all_sim/times"])))
 
 senders -= min(senders)
 idx = np.argsort(times)

@@ -16,10 +16,10 @@ reload(functions)
 import functions as f
 import nest
 
-data  = h5.File(par.path_to_data[where]+'data_assembly.hdf5','a')
-group = data.require_group(mode)
-group = group.require_group(str(par.WmaxE[stim_idx]))
-group = group.require_group('seeds')
+data  = h5.File(par.path_to_data[where]+'data_assembly_'+mode+'_'+str(par.WmaxE[stim_idx])+'.hdf5','a')
+#group = data.require_group(mode)
+#group = group.require_group(str(par.WmaxE[stim_idx]))
+group = data.require_group('seeds')
 group = group.require_group(str(master_seed))
 
 
